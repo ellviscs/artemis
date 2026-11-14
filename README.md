@@ -35,6 +35,12 @@ The objectives below are paraphrased from our reading of the challenge brief.
 | Data access | CSV export of monthly analytics and detection-level hotspots for any area and period | Calendar "CSV" |
 | Accessible design | Colorblind-safe ramps (Viridis, Cividis, YlOrRd); keyboard calendar; table view; AA contrast | Control bar |
 
+### Does Artemis cover the NASA requirements?
+
+**Yes, for the challenge workflow.** Artemis combines the processed MODIS and VIIRS archive into a comparable Indonesia-wide time series, lets users select an area and date range, provides a year-by-month burning-activity calendar with anomaly comparisons, and exports both analytics summaries and detection-level CSV data. It therefore addresses the two core needs: harmonized hotspot history and an interactive decision-support application for responders, land managers, and scientists.
+
+The result is a statistical harmonization, not a new satellite product or a calibrated fire-probability model. Sensor differences are reduced at the fire-cell-day and monthly-count level, while cloud cover, pixel-footprint uncertainty, satellite overpass timing, and the archive's Indonesia focus remain limitations. Artemis is intended to support investigation and prioritization; it does not replace field verification, incident command, or evacuation decisions.
+
 **Beyond the brief:**
 - A forensic signature score per cell.
 - A 4-branch Impact Hub, opened from any hotspot.
