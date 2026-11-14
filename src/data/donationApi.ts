@@ -29,57 +29,6 @@ export interface GlobalNonprofit {
 export type DonationCampaign = LocalCampaign | GlobalNonprofit;
 
 const DISCOVERY_URL = import.meta.env.VITE_DONATION_DISCOVERY_URL;
-const VERIFIED_WILDFIRE_CAMPAIGNS = {
-  riau: 'https://kitabisa.com/campaign/urgentkarhutla',
-  kalimantan: 'https://www.rumahzakat.org/donasi/bantu-darurat-karhutla',
-  national: 'https://kitabisa.com/campaign/patunganuntukhutan',
-} as const;
-
-export const LOCAL_CAMPAIGNS: LocalCampaign[] = [
-  {
-    id: 'kitabisa-riau-fire-response',
-    title: 'Riau Fire Response & Community Relief',
-    organization: 'Local disaster response partners',
-    description: 'Support frontline teams and families affected by forest fires in Riau.',
-    regionTags: ['Riau', 'Sumatera', 'Indonesia'],
-    donationUrl: import.meta.env.VITE_KITABISA_RIAU_URL || VERIFIED_WILDFIRE_CAMPAIGNS.riau,
-    source: import.meta.env.VITE_KITABISA_RIAU_URL ? 'curated' : 'verified-wildfire',
-    latitude: 0.5071,
-    longitude: 101.4478,
-  },
-  {
-    id: 'kitabisa-kalimantan-fire-relief',
-    title: 'Central Kalimantan Forest Fire Relief',
-    organization: 'Local humanitarian partners',
-    description: 'Help communities facing smoke exposure and wildfire disruption.',
-    regionTags: ['Central Kalimantan', 'Kalimantan', 'Indonesia'],
-    donationUrl: import.meta.env.VITE_KITABISA_CENTRAL_KALIMANTAN_URL || VERIFIED_WILDFIRE_CAMPAIGNS.kalimantan,
-    source: import.meta.env.VITE_KITABISA_CENTRAL_KALIMANTAN_URL ? 'curated' : 'verified-wildfire',
-    latitude: -1.6815,
-    longitude: 113.3824,
-  },
-  {
-    id: 'kitabisa-indonesia-emergency',
-    title: 'Indonesia Emergency Response Fund',
-    organization: 'National disaster relief partners',
-    description: 'A national fallback fund for urgent disaster response across Indonesia.',
-    regionTags: ['Indonesia'],
-    donationUrl: import.meta.env.VITE_KITABISA_INDONESIA_URL || VERIFIED_WILDFIRE_CAMPAIGNS.national,
-    source: import.meta.env.VITE_KITABISA_INDONESIA_URL ? 'curated' : 'verified-wildfire',
-    latitude: -2.5489,
-    longitude: 118.0149,
-  },
-];
-
-export function filterLocalCampaigns(currentLocation: string): LocalCampaign[] {
-  const normalized = currentLocation.toLowerCase();
-  const specific = LOCAL_CAMPAIGNS.filter((campaign) =>
-    campaign.regionTags.some((tag) => normalized.includes(tag.toLowerCase())),
-  ).filter((campaign) => !campaign.regionTags.every((tag) => tag === 'Indonesia'));
-  if (specific.length > 0) return specific;
-  return LOCAL_CAMPAIGNS.filter((campaign) => campaign.regionTags.includes('Indonesia'));
-}
-
 export async function fetchDiscoveredCampaigns(
   location: string,
   signal?: AbortSignal,
@@ -115,6 +64,10 @@ interface EveryOrgResponse {
 const EVERY_ORG_URL = 'https://partners.every.org/v0.2/search';
 const EVERY_ORG_API_KEY = import.meta.env.VITE_EVERY_ORG_API_KEY;
 
+/**
+ * Every.org wildfire nonprofits that name the affected place. `locationKeyword` holds
+ * one or more place names separated by "|" (state first, then country).
+ */
 export async function fetchGlobalNonprofits(
   locationKeyword: string,
   signal?: AbortSignal,
@@ -130,11 +83,22 @@ export async function fetchGlobalNonprofits(
     if (!response.ok) throw new Error(`Every.org request failed (${response.status}).`);
     return response.json() as Promise<EveryOrgResponse>;
   };
-  const primaryPayload = await request(`wildfire ${locationKeyword}`.trim());
-  const primaryNonprofits = primaryPayload.nonprofits ?? primaryPayload.data ?? [];
-  const nonprofits = primaryNonprofits.length > 0
-    ? primaryNonprofits
-    : (await request('wildfire')).nonprofits ?? [];
+  // Search the state first, then the country, and keep only nonprofits whose own name or
+  // description mentions that place: a bare keyword match (e.g. a US county fire council
+  // for a fire in Brazil) is not related to the affected area. No generic fallback.
+  const places = [...new Set(locationKeyword.split('|').map((p) => p.trim()).filter(Boolean))];
+  const seen = new Set<string>();
+  const nonprofits: NonNullable<EveryOrgResponse['nonprofits']> = [];
+  for (const place of places) {
+    const payload = await request(`wildfire ${place}`);
+    for (const item of payload.nonprofits ?? payload.data ?? []) {
+      const key = String(item.slug ?? item.id ?? item.name);
+      const text = `${typeof item.name === 'string' ? item.name : ''} ${typeof item.description === 'string' ? item.description : ''}`.toLowerCase();
+      if (seen.has(key) || !places.some((pl) => text.includes(pl.toLowerCase()))) continue;
+      seen.add(key);
+      nonprofits.push(item);
+    }
+  }
 
   return nonprofits.flatMap((item, index) => {
     if (typeof item.name !== 'string' || !item.name.trim()) return [];
@@ -146,8 +110,8 @@ export async function fetchGlobalNonprofits(
       description: typeof item.description === 'string' && item.description
         ? item.description
         : `Support wildfire relief and humanitarian work related to ${locationKeyword}.`,
-      // Every.org search is keyword-based, so results are not tied to this location.
-      regionTags: ['Global'],
+      // Kept only because its own name or description names one of these places.
+      regionTags: places,
       source: 'every.org' as const,
       donationUrl: `https://www.every.org/${identifier}/donate`,
       latitude: 0,

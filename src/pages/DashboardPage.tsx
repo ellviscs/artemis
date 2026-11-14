@@ -75,6 +75,7 @@ function Dashboard() {
   }, []);
   const closeInspector = useCallback(() => setInspect(null), []);
   const [impactTarget, setImpactTarget] = useState<InspectTarget | null>(null);
+  const [impactOrigin, setImpactOrigin] = useState<DOMRect | null>(null);
   const [hazeCone, setHazeCone] = useState<HazeConeGeometry | null>(null);
   const closeImpact = useCallback(() => setImpactTarget(null), []);
   const showCone = useCallback((cone: HazeConeGeometry) => {
@@ -323,13 +324,17 @@ function Dashboard() {
           onClose={closeInspector}
           todayHotspots={liveInAoi}
           previousDayHotspots={liveData?.previousDayHotspots ?? []}
-          onOpenImpact={() => setImpactTarget(inspect)}
+          onOpenImpact={(origin) => {
+            setImpactOrigin(origin);
+            setImpactTarget(inspect);
+          }}
         />
       )}
       {impactTarget && (
         <ImpactHub
           variant="modal"
           target={impactTarget}
+          origin={impactOrigin}
           liveHotspots={(liveData?.viirsHotspots ?? []).concat(liveData?.modisHotspots ?? [])}
           onClose={closeImpact}
           onShowCone={showCone}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CloudOff, HandHeart, Info, Moon, ShieldCheck, X } from 'lucide-react';
+import { ArrowRight, CloudOff, HandHeart, Info, Moon, ShieldCheck, X } from 'lucide-react';
 
 import { MONTH_LABELS, fetchForensicCell, type ForensicCell } from '@/data/historyApi';
 import { reverseGeocode } from '@/data/locationApi';
@@ -24,7 +24,8 @@ interface Props {
   todayHotspots: FireHotspot[];
   previousDayHotspots: FireHotspot[];
   /** Opens the Impact Hub for this target; falls back to the /impact route. */
-  onOpenImpact?: () => void;
+  /** Opens the Impact Hub; receives the button's rect so the hub can expand from it. */
+  onOpenImpact?: (origin: DOMRect) => void;
 }
 
 const PERSISTENCE_RADIUS_KM = 10;
@@ -302,18 +303,27 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
         </p>
       </div>
 
-      <footer className="grid grid-cols-2 gap-2 border-t border-white/[0.1] px-4 py-3">
+      <footer className="flex flex-col gap-2 border-t border-white/[0.1] bg-[#0b0b0b] px-4 py-3">
+        {/* The inspector's one primary action: an ember-gradient button that pulses when a hotspot opens. */}
         <button
+          key={`${target.lat},${target.lng}`}
           type="button"
-          onClick={() => (onOpenImpact ? onOpenImpact() : navigate(`/impact?lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`))}
-          className="flex items-center justify-center gap-1.5 rounded-[6px] bg-accent-500 px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-black hover:bg-accent-400"
+          onClick={(e) => (onOpenImpact ? onOpenImpact(e.currentTarget.getBoundingClientRect()) : navigate(`/impact?lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`))}
+          className="hub-cta group relative flex w-full items-center gap-3 overflow-hidden rounded-[6px] px-4 py-3 text-left text-karhutla-smoke ring-1 ring-accent-200/50 transition-[filter,transform] hover:brightness-110 active:scale-[0.99]"
         >
-          <HandHeart className="h-3.5 w-3.5" /> Open impact hub
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-karhutla-smoke/90 text-accent-300">
+            <HandHeart className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-mono text-[12px] font-bold uppercase tracking-[0.1em]">Open impact hub</span>
+            <span className="mt-0.5 block text-[11px] font-medium leading-4 text-karhutla-smoke/80">Fund prevention · verify on the ground · haze alerts</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
         </button>
         <button
           type="button"
           onClick={() => navigate(`/audit?cell=${target.cell}&lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`)}
-          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-white/[0.18] px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/80 hover:border-white/35 hover:text-white"
+          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-white/[0.18] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/75 hover:border-white/35 hover:text-white"
         >
           Run compliance audit
         </button>

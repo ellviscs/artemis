@@ -80,3 +80,29 @@ export async function reverseGeocode(
   if (!location) throw new Error('Unable to identify the selected map area.');
   return location;
 }
+
+export interface AdminArea {
+  /** English country name, e.g. "Australia". */
+  country: string;
+  /** ISO 3166-1 alpha-2, lower case, e.g. "au". */
+  countryCode: string;
+  /** First-level region in English (state / province), when known. */
+  state: string | null;
+}
+
+/** Country and state of a point (English names), for matching local organizations. */
+export async function reverseGeocodeAdmin(latitude: number, longitude: number, signal?: AbortSignal): Promise<AdminArea> {
+  const params = new URLSearchParams({
+    lat: latitude.toString(),
+    lon: longitude.toString(),
+    format: 'jsonv2',
+    zoom: '5',
+    'accept-language': 'en',
+  });
+  const response = await fetch(`${NOMINATIM_URL}/reverse?${params.toString()}`, { signal, headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Location lookup failed (${response.status}).`);
+  const result = await response.json() as { address?: { country?: unknown; country_code?: unknown; state?: unknown } };
+  const a = result.address;
+  if (typeof a?.country !== 'string' || typeof a.country_code !== 'string') throw new Error('No country at this point.');
+  return { country: a.country, countryCode: a.country_code.toLowerCase(), state: typeof a.state === 'string' ? a.state : null };
+}

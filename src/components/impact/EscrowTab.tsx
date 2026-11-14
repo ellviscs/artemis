@@ -249,14 +249,16 @@ export function EscrowTab({ ctx, onViewLocation }: { ctx: HubContext; onViewLoca
       <div className="space-y-4">
         <PledgeFlow poolKey={poolKey} onPledged={() => setPool(readLocal<Pledge[]>(poolKey, []))} />
         <div>
-          <h3 className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-white/85">Donate now to verified campaigns</h3>
+          <h3 className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-white/85">Groups fighting fire near this spot</h3>
           <DonationWidget
-            compact
+            lat={ctx.target.lat}
+            lng={ctx.target.lng}
+            province={ctx.forensic.data?.province ?? (ctx.calendarRegion.id === 'indonesia' ? null : ctx.calendarRegion.name)}
             currentLocation={ctx.calendarRegion.name}
             onViewLocation={onViewLocation}
           />
           <p className="mt-2 text-[11px] leading-4 text-white/55">
-            No campaign for this exact area? The national fund and the pool above always remain, so this location is never a dead end.
+            Links open each organization's own page. Village fire brigades (Masyarakat Peduli Api) are the local first responders but take no public donations.
           </p>
         </div>
       </div>

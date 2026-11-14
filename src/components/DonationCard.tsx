@@ -28,7 +28,7 @@ export function DonationCard({ campaign, currentLocation, onViewMap }: DonationC
   };
 
   return (
-    <article className="rounded-xl border border-white/[0.1] bg-white/[0.025] p-4">
+    <article className="rounded-[6px] border border-white/[0.1] bg-white/[0.025] p-4">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-300/20 bg-amber-300/10">
           <HeartHandshake className="h-4 w-4 text-amber-200" />
@@ -62,7 +62,7 @@ export function DonationCard({ campaign, currentLocation, onViewMap }: DonationC
       </div>
       <div className={`mt-4 grid grid-cols-1 gap-2 ${canViewMap ? 'sm:grid-cols-2' : ''}`}>
         {campaign.donationUrl ? (
-          <a href={campaign.donationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-300 px-3 py-2 text-[11px] font-semibold text-[#17130a] transition-colors hover:bg-amber-200">
+          <a href={campaign.donationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 rounded-[4px] bg-accent-500 px-3 py-2 text-[11px] font-semibold text-karhutla-smoke transition-colors hover:bg-accent-400">
             {campaign.source === 'verified-partner'
               ? 'Donate via relief partner'
               : campaign.source === 'verified-wildfire'

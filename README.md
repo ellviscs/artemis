@@ -144,7 +144,6 @@ Server-side variables are read only by the `/api/*` functions (and the Vite dev 
 | `NEWSDATA_API_KEY` | Server | No | NewsData.io (the legacy name `VITE_NEWSDATA_API_KEY` is still read server-side) |
 | `VITE_CARTO_API_KEY` | Browser | No | CARTO basemap key |
 | `VITE_EVERY_ORG_API_KEY` | Browser | No | Every.org public partner key |
-| `VITE_KITABISA_RIAU_URL`, `VITE_KITABISA_CENTRAL_KALIMANTAN_URL`, `VITE_KITABISA_INDONESIA_URL` | Browser | No | Verified campaign links (built-in defaults exist) |
 | `VITE_DONATION_DISCOVERY_URL` | Browser | No | Optional Python discovery service (`services/donation-discovery`) |
 
 ## Deploying to Vercel

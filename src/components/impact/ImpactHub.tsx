@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, X } from 'lucide-react';
 
@@ -27,6 +27,8 @@ interface Props {
   liveHotspots: FireHotspot[];
   variant: 'modal' | 'page';
   initialTab?: HubTab;
+  /** Rect of the button that opened the hub; the modal grows out of it. */
+  origin?: DOMRect | null;
   onClose?: () => void;
   /** Dashboard only: draw the haze cone on the main map (the dashboard closes the hub). */
   onShowCone?: (cone: HazeCone) => void;
@@ -43,19 +45,57 @@ function Chip({ label, value, tone }: { label: string; value: string; tone?: str
   );
 }
 
-export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow', onClose, onShowCone, onViewLocation }: Props) {
+const EASE_OUT = 'cubic-bezier(0.2, 0.75, 0.15, 1)';
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow', origin, onClose, onShowCone, onViewLocation }: Props) {
   const ctx = useHubContext(target);
   const [tab, setTab] = useState<HubTab>(initialTab);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const tabRefs = useRef<Record<HubTab, HTMLButtonElement | null>>({ escrow: null, ground: null, haze: null, watchdog: null });
 
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const flashRef = useRef<HTMLDivElement>(null);
+  const closing = useRef(false);
+
+  // Open: the dialog grows out of the "Open impact hub" button (a clip-path from the
+  // button's rect to the full panel) under a fading ember flash. Web Animations API,
+  // so the dashboard bundle carries no animation library.
+  useLayoutEffect(() => {
+    if (variant !== 'modal' || prefersReducedMotion()) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    backdropRef.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: 'ease-out' });
+    const d = dialog.getBoundingClientRect();
+    const from = origin
+      ? `inset(${Math.max(0, origin.top - d.top)}px ${Math.max(0, d.right - origin.right)}px ${Math.max(0, d.bottom - origin.bottom)}px ${Math.max(0, origin.left - d.left)}px round 6px)`
+      : 'inset(45% 45% 45% 45% round 6px)';
+    dialog.animate([{ clipPath: from }, { clipPath: 'inset(0px 0px 0px 0px round 6px)' }], { duration: 640, easing: EASE_OUT });
+    flashRef.current?.animate([{ opacity: 1 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], { duration: 900, easing: 'ease-out', fill: 'forwards' });
+    dialog.querySelectorAll<HTMLElement>('[data-hub-stagger]').forEach((el, i) =>
+      el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 260 + i * 70, easing: EASE_OUT, fill: 'backwards' }),
+    );
+  }, [variant, origin]);
+
+  // Close: a short fade and sink before unmounting.
+  const requestClose = useCallback(() => {
+    if (!onClose || closing.current) return;
+    if (variant !== 'modal' || prefersReducedMotion() || !dialogRef.current) return onClose();
+    closing.current = true;
+    backdropRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+    dialogRef.current
+      .animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(12px) scale(0.985)' }], { duration: 200, easing: 'ease-in', fill: 'forwards' })
+      .finished.then(onClose, onClose);
+  }, [onClose, variant]);
+
   useEffect(() => {
     headingRef.current?.focus();
     if (!onClose) return;
-    const onKey = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && requestClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, requestClose]);
 
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     const i = TABS.findIndex((t) => t.id === tab);
@@ -73,7 +113,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
 
   const body = (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="border-b border-[#a3a3a3]/15 px-4 py-3 sm:px-5">
+      <header data-hub-stagger className="border-b border-[#a3a3a3]/15 px-4 py-3 sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">Impact hub</p>
@@ -92,7 +132,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
               </Link>
             )}
             {onClose && (
-              <button type="button" onClick={onClose} aria-label="Close impact hub" className="rounded-[4px] p-1.5 text-white/60 hover:bg-white/[0.06] hover:text-white">
+              <button type="button" onClick={requestClose} aria-label="Close impact hub" className="rounded-[4px] p-1.5 text-white/60 hover:bg-white/[0.06] hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -113,7 +153,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
         </p>
       </header>
 
-      <div role="tablist" aria-label="Impact branches" className="flex gap-px overflow-x-auto border-b border-white/[0.1] bg-white/[0.06]">
+      <div data-hub-stagger role="tablist" aria-label="Impact branches" className="flex gap-px overflow-x-auto border-b border-white/[0.1] bg-white/[0.06]">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -138,7 +178,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
         ))}
       </div>
 
-      <div key={tab} id={`hub-panel-${tab}`} role="tabpanel" aria-labelledby={`hub-tab-${tab}`} className="tab-panel-in min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+      <div data-hub-stagger key={tab} id={`hub-panel-${tab}`} role="tabpanel" aria-labelledby={`hub-tab-${tab}`} className="tab-panel-in min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
         {tab === 'escrow' && <EscrowTab ctx={ctx} onViewLocation={onViewLocation} />}
         {tab === 'ground' && <GroundTruthTab ctx={ctx} />}
         {tab === 'haze' && <HazeShieldTab ctx={ctx} onShowCone={onShowCone} />}
@@ -150,9 +190,10 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
   if (variant === 'page') return <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-[#0b0b0b]">{body}</div>;
 
   return (
-    <div className="fixed inset-0 z-[1600] flex items-stretch justify-center bg-black/70 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div role="dialog" aria-modal="true" aria-labelledby="impact-title" className="flex h-full w-full max-w-5xl flex-col overflow-hidden border border-white/[0.14] bg-[#0b0b0b] shadow-[0_24px_80px_rgba(0,0,0,0.6)] sm:h-[88vh] sm:rounded-[6px]">
+    <div ref={backdropRef} className="fixed inset-0 z-[1600] flex items-stretch justify-center bg-black/70 backdrop-blur-[2px] sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && requestClose()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="impact-title" className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden border border-white/[0.14] bg-[#0b0b0b] shadow-[0_24px_80px_rgba(0,0,0,0.6)] sm:h-[88vh] sm:rounded-[6px]">
         {body}
+        <div ref={flashRef} aria-hidden className="pointer-events-none absolute inset-0 opacity-0" style={{ background: 'radial-gradient(80% 60% at 50% 100%, rgba(230,148,48,0.55), rgba(158,67,36,0.25) 45%, transparent 75%)' }} />
       </div>
     </div>
   );

@@ -292,12 +292,33 @@ input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible
 @keyframes smokeIn { from { opacity: 0; transform: translateY(18%) scale(0.95); } to { opacity: 1; transform: translateY(4%) scale(1.02); } }
 @keyframes smokeOut { from { opacity: 1; transform: translateY(4%) scale(1.02); } to { opacity: 0; transform: translateY(-14%) scale(1.08); } }
 
+/* Inspector's "Open impact hub" button: KARHUTLA ember gradient (dark text ≥ 6:1),
+   a slow shimmer, and a ring that pulses three times when a hotspot is opened. */
+.hub-cta {
+  background: linear-gradient(100deg, var(--karhutla-asap) 0%, var(--karhutla-bara) 45%, #e8a24c 70%, var(--karhutla-asap) 100%);
+  background-size: 200% 100%;
+  animation: hubShimmer 5s ease-in-out infinite, hubPulse 1.6s ease-out 0.3s 3;
+}
+@keyframes hubShimmer { 50% { background-position: 100% 0; } }
+@keyframes hubPulse {
+  0% { box-shadow: 0 0 0 0 rgba(230, 148, 48, 0.7); }
+  100% { box-shadow: 0 0 0 14px rgba(230, 148, 48, 0); }
+}
+
+/* Scroll area whose content fades out at the top and bottom edges. */
+.scroll-fade {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
 /* Impact Hub tab panels fade in on switch. */
 .tab-panel-in { animation: panelIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
 @keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track, .page-stage, .page-stage.is-exiting, .smoke-veil, .tab-panel-in, .display-sweep { animation: none !important; }
+  .ticker-track, .page-stage, .page-stage.is-exiting, .smoke-veil, .tab-panel-in, .display-sweep, .hub-cta { animation: none !important; }
   .smoke-veil { display: none; }
   .chart-draw path[data-draw], .grow-bars [data-bar], .slide-marks [data-mark], .slide-marks [data-fill] { transition: none !important; stroke-dashoffset: 0 !important; transform: none !important; opacity: 1 !important; }
 }
