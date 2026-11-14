@@ -179,7 +179,7 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
             <CloudOff className="mt-0.5 h-4 w-4 shrink-0 text-[#7dd3fc]" />
             <span>
               <strong className="font-semibold text-[#7dd3fc]">Cloud-obscured persistence.</strong> {obscured} detection
-              {obscured === 1 ? '' : 's'} within {PERSISTENCE_RADIUS_KM} km burned yesterday with nothing seen today. Clouds or smoke
+              {obscured === 1 ? '' : 's'} within {PERSISTENCE_RADIUS_KM} km burned in the previous 24 h with nothing seen in the last 24 h. Clouds or smoke
               can hide active fire; treat this as unconfirmed, not extinguished.
             </span>
           </p>

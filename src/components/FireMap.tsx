@@ -419,7 +419,7 @@ export function FireMap({
                 ? 'Click the map to set the centre point'
                 : statusLabel
                   ?? (selectedDate
-                    ? `${liveDate === selectedDate ? 'NASA FIRMS live ·' : 'No live layer ·'} ${selectedDate}`
+                    ? (liveDate === selectedDate ? 'NASA FIRMS live · last 24 h' : `No live layer · ${selectedDate}`)
                     : 'Waiting for NASA FIRMS live data')}
           </div>
         </div>

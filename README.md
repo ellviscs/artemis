@@ -100,7 +100,7 @@ The demo audit plots, chosen from the processed data:
 | NASA FIRMS: MODIS C6.1, VIIRS S-NPP / NOAA-20 / NOAA-21 | Archive and live hotspots | Server proxy `/api/firms` (MAP_KEY on the server) |
 | CelesTrak | NOAA-20 / NOAA-21 orbit data (TLEs) | Server proxy `/api/tle`, cached 6 h |
 | OpenWeatherMap | Current wind, humidity, temperature | Server proxy `/api/weather` |
-| NewsData.io | Wildfire news on the landing page | Server proxy `/api/news` |
+| NewsData.io | English wildfire news (top-priority domains, duplicates and aggregators removed) on the landing page | Server proxy `/api/news` |
 | OpenStreetMap via Overpass API | Schools and health facilities in the haze cone | Browser, public endpoint |
 | OpenStreetMap Nominatim | Place names for hotspots | Browser, public endpoint |
 | CARTO basemaps | Dark map tiles | Browser |

@@ -9,13 +9,19 @@
 //   [data-earth-intro]   globe: scales in on load
 //   [data-earth]         globe: sinks, shrinks and dims into the ticker as you scroll
 //   [data-heat]          overlay that warms its section while it crosses the viewport
-//   [data-split]         section titles: masked line reveal when they enter
-//   [data-reveal]        blocks that fade up when they enter (batched)
+//   [data-split]         section titles: masked line reveal each time they enter
+//   [data-reveal]        blocks that fade up each time they enter (batched)
+//   [data-rule]          section border: its hairline draws in and labels fade as it arrives
+//
+// Smooth scrolling: Lenis (inertial, on native scroll, so position: fixed and the
+// liquid-glass snapshot stay correct) drives ScrollTrigger through the GSAP ticker.
+// Desktop pointers only; touch keeps native scrolling. Off under reduced motion.
 //
 // Nothing is pinned or scroll-jacked. Everything is visible without this module, and
 // prefers-reduced-motion skips it (gsap.matchMedia reverts all of it on change).
 // The liquid-glass cards are deliberately not animated: their refraction comes from a
 // one-time page snapshot, so moving them would misalign the glass.
+import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
@@ -29,16 +35,28 @@ export function initLandingMotion(root: HTMLElement): () => void {
   mm.add('(prefers-reduced-motion: no-preference)', () => {
     const splits: SplitText[] = [];
 
+    // ── Smooth scroll ────────────────────────────────────────────────────────
+    let lenis: Lenis | null = null;
+    const lenisTick = (time: number) => lenis?.raf(time * 1000);
+    if (window.matchMedia('(pointer: fine)').matches) {
+      lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(lenisTick);
+      gsap.ticker.lagSmoothing(0);
+    }
+
     // ── Hero entrance ─────────────────────────────────────────────────────────
     const intro = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.15 });
-    intro.from(q('[data-earth-intro]'), { autoAlpha: 0, scale: 0.86, duration: 1.8, ease: 'power2.out' }, 0);
+    intro.from(q('[data-earth-intro]'), { autoAlpha: 0, yPercent: 18, duration: 2.2, ease: 'power3.out' }, 0);
     q('[data-split-hero]').forEach((el) => {
       splits.push(
         SplitText.create(el, {
           type: 'lines',
           mask: 'lines',
           autoSplit: true,
-          onSplit: (self) => intro.from(self.lines, { yPercent: 110, duration: 1, stagger: 0.09 }, 0.1),
+          // Standalone tween: autoSplit re-runs this after layout changes, and a tween added to the
+          // finished intro timeline would never play (lines stayed hidden).
+          onSplit: (self) => gsap.from(self.lines, { yPercent: 110, duration: 1, stagger: 0.09, ease: 'power3.out', delay: 0.25 }),
         }),
       );
     });
@@ -49,10 +67,8 @@ export function initLandingMotion(root: HTMLElement): () => void {
     const hero = q('[data-hero]')[0];
     if (hero) {
       gsap.to(q('[data-earth]'), {
-        yPercent: 16,
-        scale: 0.84,
-        rotate: -4,
-        autoAlpha: 0.35,
+        yPercent: 14,
+        autoAlpha: 0.45,
         ease: 'none',
         scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.8 },
       });
@@ -80,19 +96,34 @@ export function initLandingMotion(root: HTMLElement): () => void {
               duration: 0.95,
               stagger: 0.09,
               ease: 'power3.out',
-              scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+              // Replays each time the title scrolls back in, from above or below.
+              scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom top', toggleActions: 'play reset play reset' },
             }),
         }),
       );
     });
 
+    // ── Section borders: the hairline draws across as the section arrives ─────
+    q('[data-rule]').forEach((rule) => {
+      gsap
+        .timeline({ scrollTrigger: { trigger: rule, start: 'top 92%', end: 'top 62%', scrub: 0.6 } })
+        .fromTo(rule.querySelector('[data-rule-line]'), { scaleX: 0 }, { scaleX: 1, ease: 'none' }, 0)
+        .fromTo(rule.querySelectorAll('[data-rule-text]'), { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, ease: 'power2.out', stagger: 0.15 }, 0);
+    });
+
     // ── Blocks: batched fade-up ───────────────────────────────────────────────
     const blocks = q('[data-reveal]');
     gsap.set(blocks, { autoAlpha: 0, y: 32 });
+    // Replays on every entry; resets only once the block is fully off screen.
+    const show = (els: Element[]) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: true });
+    const hide = (els: Element[]) => gsap.set(els, { autoAlpha: 0, y: 32, overwrite: true });
     ScrollTrigger.batch(blocks, {
-      start: 'top 88%',
-      once: true,
-      onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out', overwrite: true }),
+      start: 'top 94%',
+      end: 'bottom top',
+      onEnter: show,
+      onEnterBack: show,
+      onLeave: hide,
+      onLeaveBack: hide,
     });
 
     // Late content (news, live counts) changes the page height: re-measure triggers.
@@ -104,6 +135,8 @@ export function initLandingMotion(root: HTMLElement): () => void {
     ro.observe(root);
 
     return () => {
+      gsap.ticker.remove(lenisTick);
+      lenis?.destroy();
       ro.disconnect();
       cancelAnimationFrame(raf);
       splits.forEach((s) => s.revert());

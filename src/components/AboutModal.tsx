@@ -97,7 +97,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             {[
               { icon: Satellite, title: 'Live hotspot map', text: 'MODIS and combined VIIRS NOAA-21 + SNPP observations from NASA FIRMS.' },
               { icon: CloudSun, title: 'Fire weather context', text: 'Temperature, humidity, wind speed, direction, and spread-risk signals.' },
-              { icon: Newspaper, title: 'Wildfire intelligence', text: 'Recent Indonesian and global reports filtered for wildfire relevance.' },
+              { icon: Newspaper, title: 'Wildfire intelligence', text: 'Recent English-language wildfire reports from established outlets, newest first.' },
               { icon: HeartHandshake, title: 'Direct relief access', text: 'Location-matched wildfire campaigns and global nonprofit options.' },
             ].map(({ icon: Icon, title, text }) => (
               <div key={title} className="group rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 transition-colors hover:border-amber-300/25 hover:bg-amber-300/[0.04]">

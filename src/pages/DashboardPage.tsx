@@ -207,11 +207,11 @@ function Dashboard() {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-white/55 sm:gap-3">
             <span className="rounded border border-white/[0.12] bg-[#151515] px-3 py-1.5 font-mono text-xs text-white/60">
-              Live observation · browser date
+              Live observation · rolling 24 h
             </span>
             <span className="hidden items-center gap-1.5 sm:flex">
               <span className={`h-1.5 w-1.5 rounded-full ${liveData ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-              {liveData ? `MODIS + VIIRS NRT · ${liveData.date}` : 'Loading today’s data'}
+              {liveData ? `MODIS + VIIRS NRT · last 24 h to ${liveData.windowEnd.slice(11, 16)} UTC` : 'Loading the last 24 hours'}
             </span>
           </div>
         </section>
@@ -274,7 +274,7 @@ function Dashboard() {
                 <div className={`mt-1 text-sm font-medium ${liveData ? 'text-emerald-300' : 'text-accent-300'}`}>
                   {liveSummary ? `${liveSummary.harmonizedCount.toLocaleString()} harmonized detections` : 'Waiting for NASA FIRMS'}
                 </div>
-                <div className="mt-1 text-xs text-white/55">Current browser-date observation.</div>
+                <div className="mt-1 text-xs text-white/55">Detections from the last 24 hours (UTC timestamps).</div>
               </div>
             </div>
           </aside>

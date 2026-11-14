@@ -112,14 +112,17 @@ export async function handleWeather(params: URLSearchParams, env: Env): Promise<
 export async function handleNews(_params: URLSearchParams, env: Env): Promise<ProxyResult> {
   const key = env.NEWSDATA_API_KEY || env.VITE_NEWSDATA_API_KEY;
   if (!key) return text(500, 'NEWSDATA_API_KEY is not configured on the server.');
+  // English only, newest first, from NewsData's top-priority domains (its curated tier of
+  // established outlets), with syndicated duplicates removed.
   const query = new URLSearchParams({
     apikey: key,
-    q: 'wildfire OR "forest fire" OR "kebakaran hutan"',
-    language: 'id,en',
-    category: 'environment',
+    qInTitle: 'wildfire OR "forest fire" OR bushfire OR "peat fire" OR "brush fire"',
+    language: 'en',
+    prioritydomain: 'top',
+    removeduplicate: '1',
     size: '10',
   });
-  const response = await fetch(`https://newsdata.io/api/1/news?${query.toString()}`);
+  const response = await fetch(`https://newsdata.io/api/1/latest?${query.toString()}`);
   const body = await response.text();
   return {
     status: response.status,

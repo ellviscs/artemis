@@ -1,14 +1,34 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, CloudSun, HeartHandshake, Newspaper, Satellite, ShieldCheck } from 'lucide-react';
 
-import { FeaturePreviews, TelemetryStrip, TuningPanel } from '@/components/LandingExtras';
+import { FeaturePreviews, SectionRule, TelemetryStrip, TuningPanel } from '@/components/LandingExtras';
 import { DEFAULT_EARTH, type EarthTuning } from '@/components/landing/earthTuning';
-import artemisWordmark from '@/logo/artemis-wordmark-ink.png';
+import { EmberField } from '@/components/landing/EmberField';
+import { LandingAtmosphere } from '@/components/landing/LandingAtmosphere';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 import artemisWordmarkLight from '@/logo/artemis-wordmark-light.png';
 import { cn } from '@/lib/utils';
+import { useInView } from '@/lib/useInView';
+import { fetchHistoryMeta, type HistoryMeta } from '@/data/historyApi';
+import { FIRE_CAMPAIGNS } from '@/data/fireCampaigns';
 
 // three.js is large: load the globe as its own chunk after first paint.
 const EarthHero = lazy(() => import('@/components/landing/EarthHero'));
+const ViirsSatellite = lazy(() => import('@/components/landing/ViirsSatellite'));
+
+/** If WebGL is unavailable or the globe fails, keep the page: render nothing in its place. */
+class GlobeBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.warn('Landing globe disabled:', error);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 interface ArtemisLandingProps {
   onEnterConsole: () => void;
@@ -24,10 +44,77 @@ const solutionCards = [
   { icon: HeartHandshake, title: 'Relief access is difficult to find', description: 'Every hotspot leads to an action: prevention funds, ground truth, haze warnings or verified relief campaigns.' },
 ];
 
+/**
+ * Three facts that back each problem card. Numbers come from the processed archive
+ * (meta.json) and the hand-checked campaign list; nothing is estimated here.
+ */
+function solutionFacts(index: number, meta: HistoryMeta | null): { value: string; label: string }[] {
+  const years = meta ? `${meta.range.years[0]}–${meta.range.years[1]}` : '2000–2026';
+  const span = meta ? meta.range.years[1] - meta.range.years[0] : 26;
+  const detections = meta ? `${(meta.totals.detections / 1e6).toFixed(2)}M` : '…';
+  const sensors = meta ? Object.keys(meta.sensors).length : null;
+  const verified = FIRE_CAMPAIGNS.filter((c) => c.verified);
+  const countries = new Set(verified.map((c) => c.country)).size;
+  switch (index) {
+    case 0:
+      return [
+        { value: years, label: 'One harmonized record across both sensor generations' },
+        { value: detections, label: 'Satellite fire detections processed from NASA FIRMS' },
+        { value: sensors ? String(sensors) : '…', label: 'Satellite sensor records (MODIS and VIIRS) merged onto one MODIS-equivalent scale' },
+      ];
+    case 1:
+      return [
+        { value: '~5 km²', label: 'Archive cell behind every hotspot you click' },
+        { value: `${span} yrs`, label: 'Of burn history for that cell, month by month' },
+        { value: 'Live', label: 'Wind and a downwind haze cone for the spot' },
+      ];
+    case 2:
+      return [
+        { value: 'NRT', label: 'The last 24 hours of FIRMS detections beside the archive' },
+        { value: meta ? meta.staticMask.sources.toLocaleString('en-US') : '…', label: 'Static heat sources (flares, kilns) masked out' },
+        { value: '1 map', label: 'Detections, news and alerts in the same view' },
+      ];
+    default:
+      return [
+        { value: String(verified.length), label: 'Fire groups verified by Artemis, each with a source' },
+        { value: String(countries), label: 'Countries where a verified group is listed' },
+        { value: '4', label: 'Actions per hotspot: fund, verify, warn, report' },
+      ];
+  }
+}
+
+/** Counts the number in a fact up from zero when it appears ("3.12M", "~5 km²"); other values show as they are. */
+function CountUp({ value }: { value: string }) {
+  const m = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([^\d]*)$/.exec(value);
+  const [shown, setShown] = useState(value);
+  useEffect(() => {
+    if (!m || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShown(value);
+      return;
+    }
+    const [, pre, num, post] = m;
+    const target = Number(num.replace(/,/g, ''));
+    const decimals = num.includes('.') ? num.split('.')[1].length : 0;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 900);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = target * eased;
+      setShown(`${pre}${decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString('en-US')}${post}`);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  return <>{shown}</>;
+}
+
 const primaryBtn =
   'inline-flex items-center justify-center gap-2 rounded-[6px] bg-accent-500 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] text-karhutla-ink shadow-[0_10px_30px_-10px_rgba(158,67,36,0.6)] transition-colors hover:bg-accent-400';
-const secondaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-[6px] border border-neutral-900/25 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-neutral-900 transition-colors hover:border-neutral-900/60 hover:bg-white/50';
+const secondaryBtnDark =
+  'inline-flex items-center justify-center gap-2 rounded-[6px] border border-white/25 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-white transition-colors hover:border-white/60 hover:bg-white/[0.06]';
 
 export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: ArtemisLandingProps) {
   const [activeSolution, setActiveSolution] = useState(0);
@@ -37,6 +124,12 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
   const onCount = useCallback((n: number) => setLiveCount(n), []);
   const selected = solutionCards[activeSolution];
   const rootRef = useRef<HTMLDivElement>(null);
+  // Replays the fact count-up each time the panel scrolls back into view.
+  const facts = useInView<HTMLDListElement>(0.3, { repeat: true });
+  const [meta, setMeta] = useState<HistoryMeta | null>(null);
+  useEffect(() => {
+    fetchHistoryMeta().then(setMeta).catch(() => setMeta(null));
+  }, []);
 
   // Scroll choreography (GSAP + ScrollTrigger + SplitText) loads as its own chunk once
   // fonts are ready, so line splits match the final type. Content is fully visible
@@ -57,19 +150,19 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
 
   return (
     <div ref={rootRef} className="min-h-screen overflow-hidden bg-karhutla-paper text-neutral-900">
-      <header className="relative z-20 border-b border-neutral-900/10 bg-karhutla-paper/85 backdrop-blur-xl">
+      <header className="relative z-20 border-b border-white/10 bg-[#070504]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 sm:px-8">
           <button onClick={onOpenAbout} className="flex items-center gap-3 text-left" aria-label="About Artemis">
-            <img src={artemisWordmark} alt="Artemis" width={1200} height={326} className="h-8 w-auto sm:h-9" />
+            <img src={artemisWordmarkLight} alt="Artemis" width={1200} height={326} className="h-8 w-auto sm:h-9" />
           </button>
           <nav className="flex items-center gap-1 sm:gap-2" aria-label="Main">
-            <button onClick={() => onOpen('/audit')} className="hidden rounded-[6px] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-700 transition-colors hover:text-neutral-950 sm:block">
+            <button onClick={() => onOpen('/audit')} className="hidden rounded-[6px] px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-white/70 transition-colors hover:text-white sm:block">
               EUDR audit
             </button>
-            <button onClick={onOpenAbout} className="rounded-[6px] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-700 transition-colors hover:text-neutral-950">
+            <button onClick={onOpenAbout} className="rounded-[6px] px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-white/70 transition-colors hover:text-white">
               About
             </button>
-            <button onClick={onEnterConsole} className="ml-1 rounded-[6px] bg-karhutla-ink px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-colors hover:bg-neutral-800">
+            <button onClick={onEnterConsole} className="ml-1 rounded-[6px] bg-accent-500 px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-karhutla-smoke transition-colors hover:bg-accent-400">
               Console
             </button>
           </nav>
@@ -77,57 +170,63 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
       </header>
 
       <main>
-        <section data-hero className="flow-hero grain relative overflow-hidden">
-          <div data-heat aria-hidden className="pointer-events-none absolute inset-0 opacity-0" style={{ background: 'radial-gradient(60% 45% at 70% 100%, rgba(217,131,28,0.75), transparent 70%)' }} />
-          <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pt-12 sm:px-8 lg:flex lg:min-h-[50rem] lg:items-center lg:pb-40 lg:pt-10">
-            <div className="lg:max-w-[46%]">
-              <div data-hero-fade className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
-                From detection to informed action
+        {/* Orbit hero: a dark stage, the live count of today's detections, and the Earth rising
+            as a huge spinning horizon with every fire burning on it as neon pixels. */}
+        <section data-hero className="hero-orbit relative isolate flex min-h-[calc(100svh-4.25rem)] flex-col overflow-hidden text-white">
+          <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-1 flex-col items-center px-5 pb-[30vh] pt-10 text-center sm:px-8 sm:pt-12 lg:pb-[31vh]">
+            <h1 className="font-display text-[clamp(1.85rem,4.4vw,4.6rem)] font-bold leading-[1.06] [text-shadow:0_2px_24px_#070504]">
+              <span data-split-hero className="block">Wildfire signals are everywhere.</span>
+              <span data-hero-sweep className="display-sweep-ember mt-2 block">Clarity is not.</span>
+            </h1>
+            {/* Set like the command center's readouts: JetBrains Mono, tight and technical. */}
+            <p data-hero-fade className="mt-6 max-w-[46rem] font-mono text-[13px] leading-6 tracking-[0.01em] text-white/70 [text-shadow:0_1px_12px_#070504] sm:text-[14px] sm:leading-[1.7]">
+              <span className="text-accent-300">&gt;</span> Twenty-six years of NASA fire detections over Indonesia, put on one scale. Artemis shows which months
+              are unusual, which places burn again and again, and what anyone can do about a hotspot today.
+            </p>
+            <div data-hero-fade className="mt-7 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+              <button onClick={onEnterConsole} className={primaryBtn}>
+                Launch command center <ArrowRight className="h-4 w-4" />
+              </button>
+              <button onClick={() => onOpen('/audit')} className={secondaryBtnDark}>
+                <ShieldCheck className="h-4 w-4" /> Enterprise EUDR audit
+              </button>
+            </div>
+
+            {/* The live count, sitting on the horizon. */}
+            <div data-hero-fade className="mt-auto pt-10" aria-live="polite">
+              <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-400">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent-500" />
+                Fire detections · last 24 h
               </div>
-              <h1 className="font-display text-[1.7rem] font-bold leading-[1.12] text-neutral-950 sm:text-4xl lg:text-[3.1rem] lg:leading-[1.08]">
-                <span data-split-hero className="block">Wildfire signals are everywhere.</span>
-                <span data-hero-sweep className="display-sweep mt-2 block">Clarity is not.</span>
-              </h1>
-              <p data-hero-fade className="mt-6 max-w-xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
-                Twenty-six years of NASA fire detections over Indonesia, put on one scale. Artemis shows which months
-                are unusual, which places burn again and again, and what anyone can do about a hotspot today.
-              </p>
-              <div data-hero-fade className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button onClick={onEnterConsole} className={primaryBtn}>
-                  Launch command center <ArrowRight className="h-4 w-4" />
-                </button>
-                <button onClick={() => onOpen('/audit')} className={secondaryBtn}>
-                  <ShieldCheck className="h-4 w-4" /> Enterprise EUDR audit
-                </button>
+              <div className="mt-2 font-mono text-[clamp(2.1rem,3.4vw,3.1rem)] font-semibold leading-none tabular-nums tracking-[-0.04em] text-white">
+                {liveCount === null ? <span className="text-white/35">——</span> : liveCount.toLocaleString('en-US')}
               </div>
-              <div data-hero-fade className="mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1" aria-live="polite">
-                <span className="font-display text-lg font-bold tabular-nums text-karhutla-char sm:text-xl">
-                  {liveCount === null ? 'Reading the sky…' : liveCount.toLocaleString('en-US')}
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-700">
-                  {liveCount === null ? 'NASA FIRMS · today' : 'fire detections today · NASA FIRMS · each light on the globe is one'}
-                </span>
-              </div>
-              <div data-hero-fade className="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-700">
-                <span>NASA FIRMS MODIS + VIIRS · 2000–2026</span>
-                <span>Harmonized burning calendar</span>
-                <button onClick={onOpenAbout} className="uppercase underline-offset-4 hover:text-neutral-950 hover:underline">How Artemis works</button>
+              <div className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-white/70 [text-shadow:0_1px_10px_#070504,0_0_4px_#070504]">
+                NASA FIRMS · MODIS + VIIRS · each neon pixel is one detection
               </div>
             </div>
           </div>
 
-          {/* The 3D moment: Earth sits straight on the page, lit by today's real fire detections,
-              its orange atmosphere bleeding into the hero gradient. Below the text on phones,
-              cropped by the right edge on desktop. Outer div positions, inner divs animate. */}
-          <div aria-hidden className="pointer-events-none relative z-[1] mx-auto -mt-6 mb-[-18%] aspect-square w-[128%] -translate-x-[11%] sm:w-[105%] sm:-translate-x-[2.5%] lg:absolute lg:right-[-13%] lg:top-1/2 lg:m-0 lg:w-[min(70rem,64vw)] lg:-translate-y-[54%] lg:translate-x-0">
-            <div data-earth className="absolute inset-0">
+          {/* The 3D moment. Outer div positions, inner divs animate (intro rise, scroll hand-off). */}
+          {/* data-html2canvas-ignore: the liquid-glass snapshot must never touch this canvas. html2canvas calls
+              getContext('2d') on canvases it clones, which would lock it and stop WebGL from starting. */}
+          <div aria-hidden data-html2canvas-ignore className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[62vh] min-h-[340px]">
+            <div data-earth className="absolute inset-0 will-change-transform">
               <div data-earth-intro className="absolute inset-0">
-                <div className="absolute inset-[4%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(230,148,48,0.55) 30%, rgba(198,116,56,0.22) 52%, transparent 68%)' }} />
-                <Suspense fallback={<div className="absolute inset-[24%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#2a1a14,#0b0908_70%)]" />}>
-                  <div className="absolute inset-0">
+                <GlobeBoundary>
+                  <Suspense fallback={null}>
                     <EarthHero tuning={earth} onCount={onCount} />
-                  </div>
-                </Suspense>
+                  </Suspense>
+                </GlobeBoundary>
+                {/* The VIIRS carrier orbiting the Earth: a taller canvas (globe height / 0.62) on top of the
+                    globe with the same camera, so the satellite passes behind the real globe and never clips. */}
+                <div className="absolute inset-x-0 bottom-0 h-[161.3%]">
+                  <GlobeBoundary>
+                    <Suspense fallback={null}>
+                      <ViirsSatellite />
+                    </Suspense>
+                  </GlobeBoundary>
+                </div>
               </div>
             </div>
           </div>
@@ -139,8 +238,8 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         <section className="flow-solves grain relative">
           <div data-heat aria-hidden className="pointer-events-none absolute inset-0 opacity-0" style={{ background: 'radial-gradient(70% 40% at 30% 100%, rgba(230,148,48,0.7), transparent 70%)' }} />
           <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-28 pt-14 sm:px-8 lg:pb-36 lg:pt-20">
-            <div className="mb-8">
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-700">What Artemis solves</div>
+            <SectionRule index="03" label="What Artemis solves" />
+            <div className="mb-8 mt-10">
               <h2 data-split className="mt-3 max-w-4xl font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">A connected picture for wildfire response</h2>
             </div>
             <div data-reveal className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
@@ -150,32 +249,46 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
                     key={title}
                     onClick={() => setActiveSolution(index)}
                     aria-pressed={activeSolution === index}
-                    className={cn('group min-h-32 p-5 text-left transition-colors', activeSolution === index ? 'bg-white' : 'bg-karhutla-paper hover:bg-white/70')}
+                    className={cn('group relative min-h-32 overflow-hidden p-5 text-left transition-colors', activeSolution === index ? 'bg-white' : 'bg-karhutla-paper hover:bg-white/70')}
                   >
-                    <Icon className={cn('h-5 w-5', activeSolution === index ? 'text-neutral-950' : 'text-neutral-600 group-hover:text-neutral-900')} />
+                    {/* Ember bar that grows across the selected card. */}
+                    <span aria-hidden className={cn('absolute inset-x-0 top-0 h-[3px] origin-left bg-gradient-to-r from-accent-500 to-karhutla-rust transition-transform duration-500', activeSolution === index ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-[0.25]')} />
+                    <Icon className={cn('h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5', activeSolution === index ? 'text-accent-700' : 'text-neutral-600 group-hover:text-neutral-900')} />
                     <h3 className="mt-5 font-semibold text-neutral-900">{title}</h3>
-                    <span className="mt-2 block font-mono text-[9px] uppercase tracking-[0.12em] text-neutral-600">
+                    <span className="mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] text-neutral-600">
                       {activeSolution === index ? 'Selected' : 'Explore'}
                     </span>
                   </button>
                 ))}
               </div>
-              {/* Fluted glass over the thermal gradient. */}
-              <div className="thermal-gradient grain relative overflow-hidden rounded-[6px]">
-                <div className="fluted-glass relative z-[2] flex h-full flex-col justify-between p-6 sm:p-8">
-                  <div className="rounded-[4px] bg-karhutla-paper/85 p-5 backdrop-blur-sm sm:p-6">
-                    <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-700">Why it matters</div>
-                    <h3 key={selected.title} className="tab-panel-in mt-3 font-display text-lg font-bold leading-snug text-neutral-950 sm:text-xl">{selected.title}</h3>
-                    <p key={`${selected.title}-d`} className="tab-panel-in mt-3 max-w-xl text-sm leading-7 text-neutral-800">{selected.description}</p>
+              {/* Hex-cell field (Artemis' ~5 km² archive grid) over deep ember, with the facts that back each problem. */}
+              <div
+                className="hex-field grain relative overflow-hidden rounded-[6px] text-white"
+                onPointerMove={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.setProperty('--px', `${((e.clientX - r.left) / r.width) * 100}%`);
+                  e.currentTarget.style.setProperty('--py', `${((e.clientY - r.top) / r.height) * 100}%`);
+                }}
+                onPointerLeave={(e) => {
+                  e.currentTarget.style.setProperty('--px', '-60%');
+                  e.currentTarget.style.setProperty('--py', '-60%');
+                }}
+              >
+                <div className="relative z-[2] flex h-full flex-col justify-between gap-8 p-6 sm:p-8">
+                  <div>
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-200">Why it matters</div>
+                    <h3 key={selected.title} className="tab-panel-in mt-3 font-display text-lg font-bold leading-snug text-white sm:text-xl">{selected.title}</h3>
+                    <p key={`${selected.title}-d`} className="tab-panel-in mt-3 max-w-xl text-sm leading-7 text-white/80">{selected.description}</p>
                   </div>
-                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                    {['Observe', 'Contextualize', 'Respond'].map((step, index) => (
-                      <div key={step} className="rounded-[4px] bg-black/35 p-3 backdrop-blur-sm">
-                        <div className="font-mono text-[9px] text-white/75">0{index + 1}</div>
-                        <div className="mt-2 text-xs font-medium text-white">{step}</div>
+                  <dl ref={facts.ref} key={`${selected.title}-f-${facts.inView}`} className="tab-panel-in grid gap-2 sm:grid-cols-3">
+                    {solutionFacts(activeSolution, meta).map((f) => (
+                      <div key={f.label} className="rounded-[4px] border border-white/10 bg-karhutla-smoke/55 p-3.5 backdrop-blur-sm">
+                        <dt className="sr-only">{f.label}</dt>
+                        <dd className="font-display text-lg font-bold tabular-nums text-accent-200 sm:text-xl"><CountUp value={f.value} /></dd>
+                        <dd className="mt-1.5 text-xs leading-5 text-white/75">{f.label}</dd>
                       </div>
                     ))}
-                  </div>
+                  </dl>
                 </div>
               </div>
             </div>
@@ -183,10 +296,13 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         </section>
 
         {news && (
-          <section aria-labelledby="field-reporting" className="flow-news grain relative text-white">
-            <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-6 sm:px-8 lg:pb-28">
-              <div className="mb-8">
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-karhutla-smoke/80">Field reporting</div>
+          <section aria-labelledby="field-reporting" className="flow-news grain relative overflow-hidden text-white">
+            <EmberField sparks={false} className="z-[1]" />
+            {/* Feathers the grain and plumes into the footer's smoke, so the seam is a gradient, not a line. */}
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-28 bg-gradient-to-b from-transparent to-karhutla-smoke" />
+            <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-16 sm:px-8 lg:pb-28 lg:pt-20">
+              <SectionRule index="04" label="Field reporting" />
+              <div className="mb-8 mt-10">
                 <h2 data-split id="field-reporting" className="mt-3 font-display text-2xl font-bold text-karhutla-smoke sm:text-4xl">Wildfire news</h2>
               </div>
               <div data-reveal>{news}</div>
@@ -195,15 +311,10 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         )}
       </main>
 
-      <footer className="grain relative bg-karhutla-smoke">
-        <div className="relative z-[2] mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <img src={artemisWordmarkLight} alt="Artemis" width={1200} height={326} className="h-6 w-auto self-start object-contain opacity-85 sm:self-auto" />
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/60">NASA Space Apps 2026 · ITS Surabaya</p>
-        <button onClick={onEnterConsole} className="inline-flex items-center gap-2 self-start font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-300 underline-offset-4 hover:underline sm:self-auto">
-          Open live console <ArrowRight className="h-3.5 w-3.5" />
-        </button>
-        </div>
-      </footer>
+      <LandingFooter onEnterConsole={onEnterConsole} onOpenAbout={onOpenAbout} onOpen={onOpen} />
+
+      {/* Embers from the footer up to section 02, and the smoke that follows the cursor. */}
+      <LandingAtmosphere />
 
       {tuning && <TuningPanel earth={earth} onEarth={setEarth} />}
     </div>

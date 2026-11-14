@@ -46,7 +46,7 @@ Existing Indonesian disaster platforms rely on 24–48-hour live FIRMS feeds for
 
 ## Brand Commitments
 
-- Name: ARTEMIS. The current logo (`src/logo/Artemis.jpg`) is not a binding commitment.
+- Name: ARTEMIS. Logos: `src/logo/artemis-wordmark-light.png` (on dark) and `artemis-wordmark-ink.png` (on light), favicon `public/favicon.png`, share card `public/og-image.png`.
 - Dark tactical aesthetic is binding: near-black panels, orange accent, mono uppercase labels, consistent with the live prototype at `artemis-1-1.vercel.app`.
 - Voice is scientific and non-accusatory: report observations and probabilities, never verdicts. Never use "arson", "criminal", "pembakar" or similar on the public UI; use "Anthropogenic Thermal Signature Probability". Always state what is simulated and what satellite detections can't prove.
 - Credit the ITS Surabaya team (Institut Teknologi Sepuluh Nopember) and the NASA Space Apps Challenge 2026.

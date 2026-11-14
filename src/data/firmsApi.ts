@@ -2,19 +2,27 @@ import type { DailyFireSummary, EarlyWarning, FireHotspot, Region } from '@/type
 
 // Requests go through the server-side proxy (/api/firms), which holds the MAP_KEY.
 const FIRMS_BASE_URL = '/api/firms';
-// Two-day window (yesterday + today) so the UTC acq_date covers the visitor's
-// local date in any timezone. Results are filtered to that date below.
+// FIRMS acq_date / acq_time are UTC. "Live" means a rolling 24 hours ending now, picked by
+// each detection's UTC time, so no overpass is lost to time zones (Sumatra's ~01:30 WIB
+// night pass still carries the previous UTC date). Two UTC days starting the day before
+// (now - 24 h) always contain that window; detections earlier in the request (up to 24 h
+// more) are the "previous" window used for persistence checks.
 const FIRMS_DAY_RANGE = 2;
+const LIVE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const LIVE_CACHE_TTL_MS = 30 * 60 * 1000;
-const LIVE_CACHE_PREFIX = 'artemis-firms-live-v2:';
+const LIVE_CACHE_PREFIX = 'artemis-firms-live-v3:';
 let inFlightRequest: Promise<LiveFireData> | null = null;
 
 export interface LiveFireData {
+  /** Visitor's local date when fetched (labels and cache key). */
   date: string;
+  /** The live window: detections acquired in [windowStart, windowEnd] (UTC ISO). */
+  windowStart: string;
+  windowEnd: string;
   modisHotspots: FireHotspot[];
   viirsHotspots: FireHotspot[];
   harmonizedHotspots: FireHotspot[];
-  /** Detections from the previous day (MODIS + VIIRS), used for persistence checks. */
+  /** Detections from before the live window (up to 24 h earlier), used for persistence checks. */
   previousDayHotspots?: FireHotspot[];
   fetchedAt: string;
 }
@@ -27,10 +35,14 @@ interface CachedLiveFireData {
 function readCachedLiveData(date: string): LiveFireData | null {
   if (typeof window === 'undefined') return null;
 
-  const raw = window.sessionStorage.getItem(`${LIVE_CACHE_PREFIX}${date}`);
-  if (!raw) return null;
-
-  const cached = JSON.parse(raw) as CachedLiveFireData;
+  let cached: CachedLiveFireData;
+  try {
+    const raw = window.sessionStorage.getItem(`${LIVE_CACHE_PREFIX}${date}`);
+    if (!raw) return null;
+    cached = JSON.parse(raw) as CachedLiveFireData;
+  } catch {
+    return null;
+  }
   if (!Number.isFinite(cached.savedAt) || Date.now() - cached.savedAt > LIVE_CACHE_TTL_MS) {
     window.sessionStorage.removeItem(`${LIVE_CACHE_PREFIX}${date}`);
     return null;
@@ -41,21 +53,28 @@ function readCachedLiveData(date: string): LiveFireData | null {
 function writeCachedLiveData(data: LiveFireData): void {
   if (typeof window === 'undefined') return;
   const cached: CachedLiveFireData = { savedAt: Date.now(), data };
-  window.sessionStorage.setItem(`${LIVE_CACHE_PREFIX}${data.date}`, JSON.stringify(cached));
+  try {
+    // Worldwide detections are large: drop older live caches (any version) before writing,
+    // and never let a full storage quota break the live feed.
+    for (const key of Object.keys(window.sessionStorage)) {
+      if (key.startsWith('artemis-firms-live-')) window.sessionStorage.removeItem(key);
+    }
+    window.sessionStorage.setItem(`${LIVE_CACHE_PREFIX}${data.date}`, JSON.stringify(cached));
+  } catch {
+    // Quota exceeded or storage blocked: keep the data in memory only.
+  }
 }
 
-// FIRMS returns [DATE .. DATE + DAY_RANGE - 1], so start the window early enough
-// to include today.
-function getRangeStart(date: string): string {
-  const start = new Date(`${date}T00:00:00Z`);
-  start.setUTCDate(start.getUTCDate() - (FIRMS_DAY_RANGE - 1));
-  return start.toISOString().slice(0, 10);
+// FIRMS returns UTC days [DATE .. DATE + DAY_RANGE - 1]; starting on the UTC date of
+// (now - 24 h) always covers the whole rolling window.
+function getRangeStart(now: number): string {
+  return new Date(now - LIVE_WINDOW_MS).toISOString().slice(0, 10);
 }
 
-function previousDay(date: string): string {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
+/** UTC time of a FIRMS row from acq_date (YYYY-MM-DD) and acq_time (HHMM). */
+function acquiredAt(date: string, time: string): number {
+  const t = time.padStart(4, '0');
+  return Date.parse(`${date}T${t.slice(0, 2)}:${t.slice(2, 4)}:00Z`);
 }
 
 function getRequestedDate(): string {
@@ -87,9 +106,8 @@ const SATELLITE_NAMES: Record<string, string> = {
 function parseCsv(
   csv: string,
   source: FireHotspot['source'],
-  dates: string[],
   fallbackSatellite: string,
-): FireHotspot[] {
+): (FireHotspot & { at: number })[] {
   const lines = csv.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
 
@@ -107,7 +125,8 @@ function parseCsv(
     const lng = Number(read('longitude'));
     const frp = Number(read('frp'));
     const date = read('acq_date');
-    if (!dates.includes(date) || ![lat, lng, frp].every(Number.isFinite)) return [];
+    const at = acquiredAt(date, read('acq_time'));
+    if (!Number.isFinite(at) || ![lat, lng, frp].every(Number.isFinite)) return [];
     const satelliteCode = read('satellite');
     const dayNight = read('daynight').toUpperCase();
 
@@ -125,6 +144,7 @@ function parseCsv(
       scan: Number(read('scan')) || 0,
       track: Number(read('track')) || 0,
       acqTime: read('acq_time').padStart(4, '0').replace(/(\d{2})(\d{2})/, '$1:$2'),
+      at,
     }];
   });
 }
@@ -217,7 +237,7 @@ export function createLiveEarlyWarning(summary: DailyFireSummary, region: Region
   return {
     level,
     title,
-    message: `${harmonizedCount.toLocaleString()} spatially harmonized FIRMS detections were observed in ${region.name} on ${summary.date}. This is a live satellite observation signal, not a fire-spread forecast; confirm conditions with field reports, weather, and local authorities.`,
+    message: `${harmonizedCount.toLocaleString()} spatially harmonized FIRMS detections were observed in ${region.name} in the last 24 hours. This is a live satellite observation signal, not a fire-spread forecast; confirm conditions with field reports, weather, and local authorities.`,
     region: region.name,
     date: summary.date,
     metrics: {
@@ -251,6 +271,7 @@ export async function fetchLiveFirmsData(): Promise<LiveFireData> {
 }
 
 async function fetchLiveFirmsDataUncached(date: string): Promise<LiveFireData> {
+  const now = Date.now();
   // Suomi-NPP VIIRS delivery ended 2 Nov 2026, so live VIIRS = NOAA-20 + NOAA-21.
   const products = [
     { product: 'MODIS_NRT', source: 'MODIS' as const, satellite: 'Terra/Aqua' },
@@ -262,7 +283,7 @@ async function fetchLiveFirmsDataUncached(date: string): Promise<LiveFireData> {
       product,
       area: 'world',
       days: String(FIRMS_DAY_RANGE),
-      date: getRangeStart(date),
+      date: getRangeStart(now),
     });
     const response = await fetch(`${FIRMS_BASE_URL}?${params.toString()}`);
     const body = await response.text();
@@ -275,19 +296,28 @@ async function fetchLiveFirmsDataUncached(date: string): Promise<LiveFireData> {
         `NASA FIRMS ${product} request failed (${response.status})${apiMessage ? `: ${apiMessage}` : '.'}`,
       );
     }
-    return parseCsv(body, source, [date, previousDay(date)], satellite);
+    return parseCsv(body, source, satellite);
   }));
 
-  const isToday = (h: FireHotspot) => h.date === date;
-  const modisHotspots = responses[0].filter(isToday);
-  const viirsHotspots = [...responses[1], ...responses[2]].filter(isToday);
-  const previousDayHotspots = responses.flat().filter((h) => !isToday(h));
+  // Drop the helper timestamp once rows are sorted into windows.
+  const strip = (h: FireHotspot & { at: number }): FireHotspot => {
+    const copy: FireHotspot & { at?: number } = { ...h };
+    delete copy.at;
+    return copy;
+  };
+  const from = now - LIVE_WINDOW_MS;
+  const inWindow = (h: { at: number }) => h.at > from && h.at <= now + 60 * 60 * 1000;
+  const modisHotspots = responses[0].filter(inWindow).map(strip);
+  const viirsHotspots = [...responses[1], ...responses[2]].filter(inWindow).map(strip);
+  const previousDayHotspots = responses.flat().filter((h) => h.at <= from && h.at > from - LIVE_WINDOW_MS).map(strip);
   if (modisHotspots.length + viirsHotspots.length === 0) {
-    throw new Error(`NASA FIRMS returned no MODIS or VIIRS detections for ${date}.`);
+    throw new Error('NASA FIRMS returned no MODIS or VIIRS detections in the last 24 hours.');
   }
 
   return {
     date,
+    windowStart: new Date(from).toISOString(),
+    windowEnd: new Date(now).toISOString(),
     modisHotspots,
     viirsHotspots,
     harmonizedHotspots: harmonizeLiveHotspots(modisHotspots, viirsHotspots),

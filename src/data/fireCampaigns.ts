@@ -11,7 +11,7 @@
 //   2. the donate link goes to the organization's own donate page, or to a platform
 //      campaign whose organizer identity the platform verified, or to a registered
 //      national zakat body.
-import { haversineKm } from '@/lib/aoi';
+import { haversineKm } from '@/lib/geo';
 
 export const BADGE_RULE =
   'Verified by Artemis: the organization’s own site (or the campaign page) documents fire work in this area, and the donate link goes to its own donate channel or to a platform-verified organizer.';

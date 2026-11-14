@@ -6,6 +6,8 @@ export interface DisasterNewsArticle {
   publishedAt: string;
   link: string;
   sourceName: string;
+  /** Outlet homepage host (e.g. "abc.net.au"), shown so readers can check the source. */
+  sourceDomain: string;
   language: string;
 }
 
@@ -19,15 +21,31 @@ interface NewsDataResponse {
     pubDate?: unknown;
     link?: unknown;
     source_name?: unknown;
+    source_id?: unknown;
+    source_url?: unknown;
     language?: unknown;
+    duplicate?: unknown;
   }>;
 }
 
 // Server-side proxy holds the NewsData.io key (see server/handlers.ts).
 const NEWS_PROXY_URL = '/api/news';
-const CACHE_KEY = 'artemis-newsdata-wildfire:v2';
+const CACHE_KEY = 'artemis-newsdata-wildfire:v3';
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const ARTICLE_LIMIT = 10;
+/** Older stories are dropped: the section is for what is burning now. */
+const MAX_AGE_DAYS = 45;
+/** Aggregators re-host other outlets' stories; only original publishers are shown. */
+const AGGREGATOR_SOURCES = /^(google|yahoo|msn|newsbreak|flipboard|ground_news)/i;
+
+function hostOf(url: unknown): string {
+  if (typeof url !== 'string') return '';
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
 
 interface CachedArticles {
   savedAt: number;
@@ -75,9 +93,16 @@ function mapArticles(response: NewsDataResponse): DisasterNewsArticle[] {
       return [];
     }
 
+    // English only, original publishers only, no syndicated duplicates, nothing stale.
+    if (typeof item.language === 'string' && item.language.toLowerCase() !== 'english') return [];
+    if (item.duplicate === true) return [];
+    if (typeof item.source_id === 'string' && AGGREGATOR_SOURCES.test(item.source_id)) return [];
+    const published = new Date(item.pubDate.replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(item.pubDate) ? '' : 'Z'));
+    if (Number.isNaN(published.getTime()) || Date.now() - published.getTime() > MAX_AGE_DAYS * 86400000) return [];
+
     const description = typeof item.description === 'string' ? item.description : '';
     const searchableText = `${item.title} ${description}`.toLowerCase();
-    const isWildfireRelated = /(wildfire|wild fire|forest fire|bushfire|kebakaran hutan|kebakaran lahan|kebakaran gambut)/i.test(searchableText);
+    const isWildfireRelated = /(wildfire|wild fire|forest fire|bushfire|brush fire|peat fire|grass fire|haze)/i.test(searchableText);
     if (!isWildfireRelated) return [];
 
     return [{
@@ -87,11 +112,12 @@ function mapArticles(response: NewsDataResponse): DisasterNewsArticle[] {
       imageUrl: typeof item.image_url === 'string' && item.image_url
         ? item.image_url
         : '',
-      publishedAt: item.pubDate,
+      publishedAt: published.toISOString(),
       link: item.link,
       sourceName: typeof item.source_name === 'string' && item.source_name
         ? item.source_name
         : 'NewsData.io',
+      sourceDomain: hostOf(item.source_url) || hostOf(item.link),
       language: typeof item.language === 'string' ? item.language.toUpperCase() : '—',
     }];
   });
@@ -108,7 +134,9 @@ export async function fetchDisasterNews(signal?: AbortSignal): Promise<DisasterN
   const data = await response.json() as NewsDataResponse & { results?: unknown };
   if (data.status === 'error') throw new Error('NewsData.io returned an error.');
 
-  const articles = mapArticles(data).slice(0, ARTICLE_LIMIT);
+  const articles = mapArticles(data)
+    .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+    .slice(0, ARTICLE_LIMIT);
   writeCache(articles);
   return articles;
 }
