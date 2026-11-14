@@ -23,8 +23,8 @@ interface NewsDataResponse {
   }>;
 }
 
-const NEWSDATA_URL = 'https://newsdata.io/api/1/news';
-const NEWSDATA_API_KEY = import.meta.env.VITE_NEWSDATA_API_KEY;
+// Server-side proxy holds the NewsData.io key (see server/handlers.ts).
+const NEWS_PROXY_URL = '/api/news';
 const CACHE_KEY = 'artemis-newsdata-wildfire:v2';
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const ARTICLE_LIMIT = 10;
@@ -100,25 +100,15 @@ function mapArticles(response: NewsDataResponse): DisasterNewsArticle[] {
 export async function fetchDisasterNews(signal?: AbortSignal): Promise<DisasterNewsArticle[]> {
   const cached = readCache();
   if (cached) return cached;
-  if (!NEWSDATA_API_KEY) {
-    throw new Error('VITE_NEWSDATA_API_KEY is not configured.');
+  const response = await fetch(NEWS_PROXY_URL, { signal });
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 120);
+    throw new Error(`NewsData.io request failed (${response.status})${response.status === 500 && detail ? `: ${detail}` : '.'}`);
   }
-
-  const params = new URLSearchParams({
-    apikey: NEWSDATA_API_KEY,
-    q: 'wildfire OR "forest fire" OR "kebakaran hutan"',
-    language: 'id,en',
-    category: 'environment',
-    size: String(ARTICLE_LIMIT),
-  });
-  const response = await fetch(`${NEWSDATA_URL}?${params.toString()}`, { signal });
   const data = await response.json() as NewsDataResponse & { results?: unknown };
+  if (data.status === 'error') throw new Error('NewsData.io returned an error.');
 
-  if (!response.ok || data.status === 'error') {
-    throw new Error(`NewsData.io request failed (${response.status}).`);
-  }
-
-  const articles = mapArticles(data);
+  const articles = mapArticles(data).slice(0, ARTICLE_LIMIT);
   writeCache(articles);
   return articles;
 }

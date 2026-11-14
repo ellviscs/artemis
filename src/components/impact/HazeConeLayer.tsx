@@ -22,7 +22,7 @@ export function HazeConeLayer({ map, cone, onClear }: { map: L.Map | null; cone:
   }, [map, cone]);
 
   return (
-    <div className="pointer-events-auto absolute bottom-3 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-[6px] border border-white/[0.14] bg-[#0b0d0b]/90 px-3 py-2 backdrop-blur-md">
+    <div className="pointer-events-auto absolute bottom-3 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-[6px] border border-white/[0.14] bg-[#0e0e0e]/90 px-3 py-2 backdrop-blur-md">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/80">Haze cone</span>
       {cone.bands.map((b) => (
         <span key={b.hours} className="flex items-center gap-1 font-mono text-[10px] text-white/70">

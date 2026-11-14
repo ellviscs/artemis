@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { Copy, GraduationCap, Map as MapIcon, Send, Stethoscope, X } from 'lucide-react';
 
 import { WeatherInfoCard } from '@/components/WeatherInfoCard';
+import { addCartoBasemap } from '@/lib/basemap';
 import { fetchCurrentWeather, type CurrentWeather } from '@/data/weatherApi';
 import { fetchFacilitiesInPolygon, FACILITY_LIMIT, type Facility } from '@/data/facilitiesApi';
 import { haversineKm } from '@/lib/aoi';
@@ -26,19 +27,13 @@ function ConeMap({ cone, facilities }: { cone: HazeConeGeometry; facilities: Loc
   useEffect(() => {
     if (!ref.current) return;
     const map = L.map(ref.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
-    // Same CARTO styles and key as the main FireMap.
-    const key = import.meta.env.VITE_CARTO_API_KEY ? `?key=${import.meta.env.VITE_CARTO_API_KEY}` : '';
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png${key}`, {
-      maxZoom: 16,
-      attribution: '© OpenStreetMap contributors © CARTO',
-    }).addTo(map);
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}.png${key}`, { maxZoom: 16, pane: 'shadowPane' }).addTo(map);
+    addCartoBasemap(map, { labels: true, maxZoom: 16 });
     [...cone.bands].reverse().forEach((b) =>
       L.polygon(b.polygon, { color: BAND_COLORS[b.hours], weight: 1, fillColor: BAND_COLORS[b.hours], fillOpacity: 0.22 })
         .bindTooltip(`${b.hours} h · up to ${Math.round(b.toKm)} km`)
         .addTo(map),
     );
-    L.circleMarker(cone.origin, { radius: 6, color: '#fff', weight: 2, fillColor: '#f9880f', fillOpacity: 1 }).bindTooltip('Hotspot').addTo(map);
+    L.circleMarker(cone.origin, { radius: 6, color: '#fff', weight: 2, fillColor: '#d9831c', fillOpacity: 1 }).bindTooltip('Hotspot').addTo(map);
     facilities.forEach((f) =>
       L.circleMarker([f.lat, f.lng], { radius: 4, color: '#000', weight: 1, fillColor: KIND_COLORS[f.kind], fillOpacity: 0.95 })
         .bindTooltip(`${f.name} · ${Math.round(f.distKm)} km`)

@@ -29,10 +29,10 @@ export function Card({
       )}
     >
       {(title || action) && (
-        <div className="flex items-start justify-between gap-4 border-b border-[#9dadbe]/15 px-4 py-3">
+        <div className="flex items-start justify-between gap-4 border-b border-[#a3a3a3]/15 px-4 py-3">
           <div className="flex items-center gap-3">
             {icon && (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-white/40">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-white/55">
                 {icon}
               </div>
             )}
@@ -43,7 +43,7 @@ export function Card({
                 </h3>
               )}
               {subtitle && (
-                <p className="mt-1 font-mono text-[10px] text-white/35">{subtitle}</p>
+                <p className="mt-1 font-mono text-[10px] text-white/55">{subtitle}</p>
               )}
             </div>
           </div>
@@ -185,7 +185,7 @@ export function StatPill({
   const trendColors: Record<string, string> = {
     up: 'text-red-400',
     down: 'text-emerald-400',
-    neutral: 'text-white/30',
+    neutral: 'text-white/55',
   };
 
   return (
@@ -199,7 +199,7 @@ export function StatPill({
           {value}
         </span>
         {unit && (
-          <span className="text-xs font-medium text-white/20">{unit}</span>
+          <span className="text-xs font-medium text-white/55">{unit}</span>
         )}
       </div>
       {trend && trendValue && (
@@ -242,7 +242,7 @@ export function Select({ value, options, onChange, className }: SelectProps) {
         ))}
       </select>
       <svg
-        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/20"
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/55"
         viewBox="0 0 20 20"
         fill="none"
         stroke="currentColor"
@@ -276,7 +276,7 @@ export function ToggleButton({
         'rounded-lg px-3 py-1.5 text-xs font-medium transition-all border',
         active
           ? 'bg-white/[0.06] text-white/80 border-white/10'
-          : 'bg-transparent text-white/30 border-transparent hover:bg-white/[0.02] hover:text-white/50',
+          : 'bg-transparent text-white/55 border-transparent hover:bg-white/[0.02] hover:text-white/50',
         className,
       )}
     >

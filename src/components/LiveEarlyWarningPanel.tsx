@@ -20,7 +20,7 @@ export function LiveEarlyWarningPanel({ warning, summary }: LiveEarlyWarningPane
   const Icon = config.icon;
 
   return (
-    <section className={cn('rounded-xl border border-l-4 p-5', config.border, config.bg)}>
+    <section className={cn('rounded-xl border p-5', config.border, config.bg)}>
       <div className="flex flex-wrap items-start gap-3">
         <Icon className={cn('mt-0.5 h-6 w-6', config.color)} />
         <div className="min-w-0 flex-1">
@@ -30,7 +30,7 @@ export function LiveEarlyWarningPanel({ warning, summary }: LiveEarlyWarningPane
           <h2 className="mt-1 text-lg font-semibold text-white">{warning.title}</h2>
           <p className="mt-2 text-sm leading-6 text-white/60">{warning.message}</p>
         </div>
-        <div className="text-right text-[10px] text-white/35">
+        <div className="text-right text-[10px] text-white/55">
           <div>Observed</div>
           <div className="mt-1 text-xs text-white/60">{formatDate(summary.date)}</div>
         </div>
@@ -54,7 +54,7 @@ export function LiveEarlyWarningPanel({ warning, summary }: LiveEarlyWarningPane
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2.5">
-      <div className="text-[9px] uppercase tracking-[0.14em] text-white/35">{label}</div>
+      <div className="text-[9px] uppercase tracking-[0.14em] text-white/55">{label}</div>
       <div className="mt-1 text-sm font-semibold tabular-nums text-white/85">{value}</div>
     </div>
   );

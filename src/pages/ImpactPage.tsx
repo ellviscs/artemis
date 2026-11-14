@@ -49,8 +49,8 @@ export function ImpactPage() {
   }, [valid, lat, lng, live, monthParam]);
 
   return (
-    <div className="min-h-screen bg-[#07090b] text-white/90">
-      <header className="border-b border-white/[0.1] bg-[#080b0e]">
+    <div className="min-h-screen bg-[#0a0a0a] text-white/90">
+      <header className="border-b border-white/[0.1] bg-[#0c0c0c]">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/dashboard" className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.1em] text-white/70 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5" /> Dashboard
@@ -60,7 +60,7 @@ export function ImpactPage() {
       </header>
       <main className="mx-auto max-w-5xl border-x border-white/[0.08]">
         {target ? (
-          <ImpactHub key={`${target.cell}:${target.live?.id ?? ''}`} variant="page" target={target} liveHotspots={live} initialTab={tabParam && TABS.includes(tabParam) ? tabParam : 'escrow'} />
+          <ImpactHub key={target.cell} variant="page" target={target} liveHotspots={live} initialTab={tabParam && TABS.includes(tabParam) ? tabParam : 'escrow'} />
         ) : (
           <div className="px-4 py-16 text-center">
             <h1 className="font-mono text-sm uppercase tracking-[0.1em] text-white/85">Impact hub</h1>

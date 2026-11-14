@@ -40,12 +40,12 @@ export function NewsSlider({ articles, isLoading, error, onRetry }: NewsSliderPr
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/90">Wildfire intelligence</h2>
               <span className="rounded-full border border-orange-300/20 bg-orange-300/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-orange-200">Live news</span>
             </div>
-            <p className="mt-1 text-[11px] text-white/40">Local & global coverage · NewsData.io</p>
+            <p className="mt-1 text-[11px] text-white/55">Local & global coverage · NewsData.io</p>
           </div>
         </div>
         {articles.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] text-white/35">{String(activeIndex + 1).padStart(2, '0')} / {String(articles.length).padStart(2, '0')}</span>
+            <span className="font-mono text-[10px] text-white/55">{String(activeIndex + 1).padStart(2, '0')} / {String(articles.length).padStart(2, '0')}</span>
             <button type="button" onClick={() => move(-1)} aria-label="Previous wildfire article" className="rounded-md border border-white/[0.1] p-1.5 text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white"><ChevronLeft className="h-4 w-4" /></button>
             <button type="button" onClick={() => move(1)} aria-label="Next wildfire article" className="rounded-md border border-white/[0.1] p-1.5 text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white"><ChevronRight className="h-4 w-4" /></button>
           </div>
@@ -63,7 +63,7 @@ export function NewsSlider({ articles, isLoading, error, onRetry }: NewsSliderPr
         <div className="grid lg:grid-cols-[1.35fr_1fr]">
           <a href={activeArticle.link} target="_blank" rel="noopener noreferrer" className="group relative min-h-[280px] overflow-hidden border-b border-white/[0.08] lg:min-h-[330px] lg:border-b-0 lg:border-r">
             <img src={activeArticle.imageUrl || FALLBACK_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover opacity-75 transition duration-700 group-hover:scale-105 group-hover:opacity-90" onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#080b0e] via-[#080b0e]/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0c] via-[#0c0c0c]/25 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
               <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-orange-200/80"><span className="rounded-full bg-orange-400 px-2 py-1 font-bold text-[#17100a]">Featured</span><span>{activeArticle.language}</span></div>
               <h3 className="max-w-xl text-xl font-semibold leading-7 text-white transition-colors group-hover:text-orange-100 sm:text-2xl">{activeArticle.title}</h3>
@@ -76,11 +76,11 @@ export function NewsSlider({ articles, isLoading, error, onRetry }: NewsSliderPr
                 <img src={article.imageUrl || FALLBACK_IMAGE} alt="" className="h-16 w-24 shrink-0 rounded-md border border-white/[0.08] object-cover opacity-80" onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
                 <span className="min-w-0">
                   <span className={`line-clamp-2 text-xs font-medium leading-5 ${index === activeIndex ? 'text-orange-100' : 'text-white/70 group-hover:text-white/90'}`}>{article.title}</span>
-                  <span className="mt-1.5 block font-mono text-[9px] text-white/35">{article.sourceName} · {formatDate(article.publishedAt)}</span>
+                  <span className="mt-1.5 block font-mono text-[9px] text-white/55">{article.sourceName} · {formatDate(article.publishedAt)}</span>
                 </span>
               </button>
             ))}
-            <a href={activeArticle.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 p-4 font-mono text-[10px] uppercase tracking-wider text-white/40 transition-colors hover:text-orange-200">Open original article <ArrowUpRight className="h-3.5 w-3.5" /></a>
+            <a href={activeArticle.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 p-4 font-mono text-[10px] uppercase tracking-wider text-white/55 transition-colors hover:text-orange-200">Open original article <ArrowUpRight className="h-3.5 w-3.5" /></a>
           </div>
         </div>
       )}
@@ -90,7 +90,7 @@ export function NewsSlider({ articles, isLoading, error, onRetry }: NewsSliderPr
 
 function ArticleMeta({ article, light = false }: { article: DisasterNewsArticle; light?: boolean }) {
   return (
-    <div className={`mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] ${light ? 'text-white/60' : 'text-white/40'}`}>
+    <div className={`mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] ${light ? 'text-white/60' : 'text-white/55'}`}>
       <span>{article.sourceName}</span>
       <span className="flex items-center gap-1"><Clock3 className="h-3 w-3" /> {formatDate(article.publishedAt)}</span>
     </div>

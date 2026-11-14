@@ -3,13 +3,12 @@
 // wording only: the report describes satellite observations, not people.
 import { fetchArchiveHotspots, MONTH_LABELS, type ForensicCell, type MonthRecord } from '@/data/historyApi';
 import { archiveCell, haversineKm } from '@/lib/aoi';
+import { platformName } from '@/lib/platforms';
 import { toCsv } from '@/lib/csvExport';
 import type { FireHotspot } from '@/types';
 
 const ARCHIVE_POINT_REGIONS = new Set(['id-riau', 'id-jambi', 'id-south-sumatra', 'id-west-kalimantan', 'id-central-kalimantan']);
 const LIVE_RADIUS_KM = 2;
-/** FIRMS satellite codes in the archive files. */
-const PLATFORM: Record<string, string> = { N: 'S-NPP', N20: 'NOAA-20', N21: 'NOAA-21', T: 'Terra', A: 'Aqua', Terra: 'Terra', Aqua: 'Aqua' };
 
 export interface DossierInput {
   lat: number;
@@ -51,7 +50,7 @@ export async function collectDetections(input: DossierInput): Promise<{ rows: Do
       .filter((p) => !p.static && archiveCell(p.lat, p.lon) === input.cell)
       .map((p) => ({
         date: p.date, time: p.time, lat: p.lat, lng: p.lon, sensor: p.sensor === 'MODIS' ? 'MODIS' : 'VIIRS',
-        satellite: PLATFORM[p.satellite] ?? p.satellite, confidence: p.conf, frp: p.frp, dayNight: p.dn, origin: 'archive' as const,
+        satellite: platformName(p.satellite), confidence: p.conf, frp: p.frp, dayNight: p.dn, origin: 'archive' as const,
       }));
   }
   return { rows: [...live, ...archive].sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1)), archiveYear };

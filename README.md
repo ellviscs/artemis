@@ -1,293 +1,188 @@
-# Artemis — Satellite Fire Intelligence
+# ARTEMIS: harmonized satellite fire calendar for Indonesia
 
-> **NASA Space Apps Challenge 2026 prototype**
->
-> A location-aware wildfire intelligence dashboard that combines live satellite hotspots, fire-weather context, wildfire reports, and direct relief access.
+> NASA Space Apps Challenge 2026 · Team ITS Surabaya
 
-## Overview
+Twenty-six years of NASA fire detections over Indonesia, from MODIS (2000→) and VIIRS (2012→), put on one comparable scale. From that record Artemis builds a month-by-month burning calendar, flags anomalous months and suspicious burn patterns, and turns any hotspot into an action.
 
-Artemis helps users move from **detection** to **context** and then to **response**:
+**Quick path for judges:**
+1. **Landing** `/`: live telemetry, raw vs harmonized chart.
+2. **Dashboard** `/dashboard`:
+   - pick Central Kalimantan;
+   - open Sep 2015 in the calendar;
+   - download the CSV;
+   - click a hexagon or live hotspot;
+   - open the Impact Hub.
+3. **Audit** `/audit`: run demo plot B, then download the due diligence statement.
 
-1. View current-day active-fire observations from NASA FIRMS.
-2. Compare MODIS with a combined VIIRS layer from NOAA-21 and Suomi NPP.
-3. Select a hotspot to inspect local weather conditions.
-4. Read recent Indonesian and global wildfire-related reports.
-5. Open direct donation pages for verified wildfire-relief campaigns or global nonprofit options.
+## The problem
 
-Artemis is an information and triage tool. Satellite detections are observations, not a fire-spread forecast, incident-command instruction, or evacuation order. Always confirm conditions with local authorities and field reports.
+Indonesia's peat and forest fires (2015 and 2019 each burned well over a million hectares) are monitored mostly through 24–48 h live hotspot feeds. Those feeds answer "where is it burning now", but not "is this month unusual?", "does this place burn every few years?" or "what can I do about this hotspot?".
 
-## Main Features
+The long record exists, but it can't be compared over time. When VIIRS arrived in 2012, its 375 m pixels began recording about four times as many fire pixels as 1 km MODIS for the same fires. A naive count therefore shows a fire explosion in 2012 that never happened.
 
-### Live satellite hotspot intelligence
+## What Artemis does, by challenge objective
 
-- NASA FIRMS MODIS NRT observations.
-- NASA FIRMS VIIRS NOAA-20 NRT observations.
-- NASA FIRMS VIIRS NOAA-21 NRT observations.
-- NOAA-20 and NOAA-21 are merged into one VIIRS layer. Suomi-NPP VIIRS delivery ended on 2 November 2026, so S-NPP is used only for the 2012–2026 archive.
-- The request uses a two-day FIRMS window (yesterday + today), then displays only the visitor's current local calendar date.
-- The map renders the highest-FRP points per layer to keep the interface responsive.
-- Raw MODIS, raw VIIRS, and harmonized layers can be toggled independently.
+The objectives below are paraphrased from our reading of the challenge brief.
 
-### MODIS + VIIRS harmonization
+| Objective | How Artemis meets it | Where |
+|---|---|---|
+| Combine MODIS and VIIRS into one consistent long-term record | Per-month VIIRS→MODIS calibration on fire cell-days; S-NPP and NOAA-20 harmonized, NOAA-21 live | `pipeline/harmonize.py`, calendar "Artemis harmonized" |
+| Show the 2012 sensor jump and its correction | Raw vs harmonized toggle on the calendar; validation chart below | Calendar toggle, landing preview |
+| Burning-activity calendar by region and month | Year × month matrix 2000–2026 for Indonesia and 5 fire provinces, or any lat/long radius or drawn polygon | `/dashboard` |
+| Anomalies against a long baseline | Z = (month − median) / IQR, 2001–2025 baseline, partial current month projected | Calendar anomaly panel |
+| Remove non-fire heat | Static mask: FIRMS volcano / static / offshore types plus persistent cells (18,251 sources, 428,579 detections) | Mask toggle, map overlay |
+| Spatial detail | H3 cells of ~5 km² (archive), pixel-footprint ellipses at zoom ≥ 9 | Map |
+| Data access | CSV export of monthly analytics and detection-level hotspots for any area and period | Calendar "CSV" |
+| Accessible design | Colorblind-safe ramps (Viridis, Cividis, YlOrRd); keyboard calendar; table view; AA contrast | Control bar |
 
-Artemis reduces duplicate counting between sensors using a spatial-temporal clustering process:
+**Beyond the brief:**
+- A forensic signature score per cell.
+- A 4-branch Impact Hub, opened from any hotspot.
+- An EUDR zero-burn audit for any plot.
 
-1. Group detections by observation date.
-2. Compare MODIS and VIIRS coordinates with Haversine distance.
-3. Merge detections within 1 km into one harmonized event.
-4. Use the highest-confidence detection as the representative coordinate.
-5. Sum fire radiative power (FRP), keep maximum confidence, and calculate weighted brightness.
+## Harmonization method
 
-Harmonization is a browser-side analytical view. It does not alter the original NASA records.
+1. **Clip.** Detections are clipped to Indonesia using geoBoundaries province polygons (7.79 M detections, Nov 2000 – Nov 2026).
+2. **Grid.** Each detection is gridded to H3 resolution 8 (~0.74 km²). The unit is the **fire cell-day**: one cell × one day with ≥ 1 detection, per sensor. This removes most of the extra pixels VIIRS records for a single fire.
+3. **Calibrate.** For each VIIRS platform and calendar month, α = median of monthly MODIS / VIIRS cell-day ratios over the overlap years. Provinces get their own α only when they have enough overlap data (≥ 30 cell-days per sensor) and the value stays within 0.5–2× the national α.
+4. **Harmonize.** Before 2012 the series is MODIS alone; after that it is the mean of MODIS, α·S-NPP and α·NOAA-20, for every sensor covering ≥ 50% of the month.
 
-### Hotspot weather
+| Platform | National pooled α | Monthly α range | Fit (log R²) | Median abs. error |
+|---|---|---|---|---|
+| VIIRS Suomi-NPP | 0.274 | ≈ 0.21–0.31 | 0.976 (167 months) | 9.6% |
+| VIIRS NOAA-20 | 0.253 | ≈ 0.21–0.31 | 0.968 (93 months) | 12.0% |
 
-Click a hotspot to load current OpenWeatherMap data for its latitude and longitude:
+![Raw vs harmonized annual totals for Indonesia](pipeline/validation_annual.png)
 
-- Temperature.
-- Relative humidity.
-- Wind speed.
-- Wind direction.
-- High Fire Spread Risk indicator when wind speed is at least 8 m/s and humidity is at most 35%.
+Across 2001–2025, raw detection counts jump about 4.9× after 2012. The harmonized series has no step at 2012.
 
-The weather card includes loading, retry, and error states.
+The full method is in [`pipeline/README.md`](pipeline/README.md).
 
-### Wildfire news
+## Anthropogenic thermal signature (forensic score)
 
-NewsData.io provides recent Indonesian and English articles using wildfire-focused terms:
+A transparent, **rule-based score** (0–100) for every ~5 km² cell with at least 3 active days since 2001 (168,595 cells), plus its national percentile.
 
-```text
-wildfire OR "forest fire" OR "kebakaran hutan"
-```
+| Feature | Weight | What it measures |
+|---|---|---|
+| Multi-year recurrence | 0.35 | Years with burning, and the share of gaps between burn years lasting 3–5 years |
+| Off-season burning | 0.30 | Detections in the province's low-fire months (drought-anomaly months count half) |
+| Geometric regularity | 0.20 | How line-like same-day VIIRS clusters are |
+| Afternoon timing | 0.15 | Afternoon-overpass share, ranked within the province |
 
-The frontend applies an additional relevance filter and caches successful results in `localStorage` for 30 minutes. Images use a fallback when an article has no `image_url`.
+Score quantiles: median 38, p90 53, p99 62. The Impact Hub evidence dossier unlocks for the top 10% (percentile ≥ 90).
 
-### Location-aware donations
+**Limitations:**
+- This is **not a trained model and not a probability**. The weights are hand-set.
+- The planned validation compares post-fire NDVI and forest-loss trajectories; it is shown as "Planned" in the inspector and is not in this build.
+- VIIRS scan geometry can make small clusters look linear.
+- Peat fires are mostly human-ignited but burn in the dry season, so a low score does not mean "natural".
+- The score flags patterns for field checks. It never identifies who started a fire.
 
-The donation widget is available on the dashboard and becomes location-specific when a hotspot is selected:
+## What is real and what is simulated
 
-1. Nominatim reverse geocoding resolves a readable location.
-2. Local relief options are filtered by `regionTags`.
-3. Direct wildfire campaign links are shown first.
-4. Every.org nonprofit options are searched using the selected location.
-5. Each campaign can fly the Leaflet map to its area.
+| Real data | Simulated, and tagged SIMULATED or DEMO in the UI |
+|---|---|
+| 2000–2026 archive, calendar, anomalies, mask, hexes, forensic scores | Escrow pledges and the QRIS/CSR payment flow: no payment is made |
+| Live NASA FIRMS hotspots (MODIS, NOAA-20, NOAA-21) | SMS / WhatsApp patrol bot and photo labels (stored in the browser only) |
+| Next VIIRS overpass: CelesTrak orbit data propagated with SGP4 | WhatsApp haze-alert broadcast: preview only, nothing is sent |
+| Downwind cone from live OpenWeatherMap wind | P2P logistics board (stored in the browser only) |
+| Schools and clinics in the cone from OpenStreetMap | Demo plot **names** in `/audit`; their coordinates and verdicts are real |
+| EUDR verdicts, burn-rate statistics and dossiers computed from the archive | |
 
-The wildfire campaign button opens the original campaign donation page in a new tab. It does not intentionally point to a generic platform homepage.
+The demo audit plots, chosen from the processed data:
+- **Plot A:** square centred at 4.630°N, 96.860°E (±0.006°), Central Aceh. Its archive cell burned only in 2018, so it **passes**.
+- **Plot B:** −3.222…−3.205°N, 112.664…112.690°E, Central Kalimantan. 60 detections since 2021 and a 3.0-year mean burn interval, so it is **flagged**.
 
-Default verified public wildfire links currently include:
+## Data sources and attribution
 
-- **Riau** — [Kitabisa: Urgent! Bantu Warga Terdampak Karhutla](https://kitabisa.com/campaign/urgentkarhutla)
-- **Central Kalimantan** — [Rumah Zakat: Indonesia Darurat Karhutla](https://www.rumahzakat.org/donasi/bantu-darurat-karhutla)
-- **Indonesia fallback** — [Kitabisa: Patungan untuk Hutan](https://kitabisa.com/campaign/patunganuntukhutan)
+| Source | Used for | Access |
+|---|---|---|
+| NASA FIRMS: MODIS C6.1, VIIRS S-NPP / NOAA-20 / NOAA-21 | Archive and live hotspots | Server proxy `/api/firms` (MAP_KEY on the server) |
+| CelesTrak | NOAA-20 / NOAA-21 orbit data (TLEs) | Server proxy `/api/tle`, cached 6 h |
+| OpenWeatherMap | Current wind, humidity, temperature | Server proxy `/api/weather` |
+| NewsData.io | Wildfire news on the landing page | Server proxy `/api/news` |
+| OpenStreetMap via Overpass API | Schools and health facilities in the haze cone | Browser, public endpoint |
+| OpenStreetMap Nominatim | Place names for hotspots | Browser, public endpoint |
+| CARTO basemaps | Dark map tiles | Browser |
+| Every.org | Global wildfire nonprofits | Browser (public partner key) |
+| geoBoundaries (CC BY 4.0) | Province polygons in the pipeline | Pipeline only |
 
-These links are public campaign links, not proof that the campaign is operated by NASA, BNPB, or officially connected to a specific FIRMS hotspot. Campaign status and availability can change and should be rechecked before production use.
+Map data © OpenStreetMap contributors, © CARTO. Fire data courtesy of NASA FIRMS (LANCE / EOSDIS).
 
-### Automated campaign discovery
+## Running locally
 
-The optional Python service in `services/donation-discovery` discovers public Kitabisa candidates:
-
-- Uses free Google News RSS by default.
-- Uses Bing Web Search only when `BING_SEARCH_API_KEY` is configured.
-- Restricts candidates to HTTPS Kitabisa URLs.
-- Follows redirects and checks the final domain.
-- Requires an HTML response.
-- Checks location and wildfire-related terms.
-- Calculates a relevance confidence score.
-- Returns only candidates above the configured threshold.
-
-The service does not access private data, login-protected pages, internal Kitabisa endpoints, CAPTCHA, or donor information. Search discovery can return no results; an empty result is safer than presenting an unverified campaign.
-
-## Technology
-
-### Frontend
-
-- React 18.
-- TypeScript.
-- Vite.
-- Tailwind CSS.
-- Leaflet.
-- `lucide-react`.
-- Custom SVG charts and dashboard visualizations.
-
-### Services and APIs
-
-- Python.
-- FastAPI.
-- HTTPX.
-- NASA FIRMS.
-- OpenWeatherMap.
-- NewsData.io.
-- OpenStreetMap Nominatim.
-- Every.org.
-- Google News RSS.
-- Optional Bing Web Search API.
-
-## API Integrations
-
-| API/service | Endpoint or access | Used for | Client behavior |
-|---|---|---|---|
-| NASA FIRMS | `/api/firms?product=…&area=world&days=2&date=…` (server-side proxy to `/api/area/csv/{MAP_KEY}/…`) | MODIS NRT, VIIRS NOAA-20 NRT, and VIIRS NOAA-21 NRT hotspots | Requests a two-day window, filters to the visitor's current local date, merges NOAA-20 + NOAA-21 as VIIRS, and caches successful responses in `sessionStorage` for 30 minutes |
-| OpenWeatherMap | `/api/weather?lat=…&lon=…` (server-side proxy to `https://api.openweathermap.org/data/2.5/weather`) | Current weather at a selected hotspot | Sends `lat`, `lon`, `appid`, and `units=metric`; maps temperature, humidity, wind speed, and wind direction |
-| NewsData.io | `https://newsdata.io/api/1/news` | Wildfire news | Sends wildfire query terms with `language=id,en`, environment category, and caches results in `localStorage` for 30 minutes |
-| OpenStreetMap Nominatim | `https://nominatim.openstreetmap.org/search` and `/reverse` | Forward and reverse geocoding | Resolves campaign locations and hotspot context; requests include a descriptive user agent |
-| Every.org | `https://partners.every.org/v0.2/search/{searchTerm}` | Global wildfire nonprofits | Searches `wildfire {location}` with `causes=wildfires`; donation links use the nonprofit's direct `/{slug}/donate` path |
-| Google News RSS | `https://news.google.com/rss/search` | Free campaign discovery fallback | Searches public Kitabisa references without a paid search key; results are redirected and validated before display |
-| Bing Web Search (optional) | `https://api.bing.microsoft.com/v7.0/search` | Higher-coverage campaign discovery | Used only when `BING_SEARCH_API_KEY` is configured; never required for local development |
-
-API keys are read from environment variables. They should not be committed, and `VITE_*` keys are visible in the browser bundle. For production, proxy shared API calls through a server/serverless layer with secrets, caching, rate limiting, and logging.
-
-### Deployment considerations
-
-`VITE_*` values are exposed in the browser bundle. For public production deployment, move shared API requests behind server/serverless endpoints and add server-side caching, rate limiting, logging, and secret management.
-
-## Getting Started
-
-### Requirements
-
-- Node.js 18 or newer.
-- npm.
-- Python 3.11 or newer for the optional discovery service.
-
-### Frontend setup
-
-From the project directory:
-
-```powershell
+```bash
 npm install
-Copy-Item .env.example .env
+cp .env.example .env    # fill in your own keys
+npm run dev             # http://localhost:5173
 ```
 
-Set the required values in `.env`:
+Checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 
-```env
-FIRMS_API_KEY=
-OPENWEATHER_API_KEY=
-VITE_CARTO_API_KEY=
-VITE_NEWSDATA_API_KEY=
-VITE_EVERY_ORG_API_KEY=
+The processed archive ships in `public/data/` (about 126 MB), so the pipeline is only needed to rebuild it.
+
+### Rebuilding the archive
+
+```bash
+python -m pip install -r pipeline/requirements.txt
+python -I pipeline/fetch_archive.py   # ~1 GB raw FIRMS download, resumable
+python -I pipeline/harmonize.py       # clip, grid, mask, calibrate, anomalies
+python -I pipeline/export.py          # write public/data/
+python -I pipeline/forensics.py       # forensic signature tiles
 ```
 
-`FIRMS_API_KEY` and `OPENWEATHER_API_KEY` have no `VITE_` prefix on purpose: they are read only by the server-side handlers in `server/handlers.ts` (Vercel functions in `api/`, and the Vite dev/preview middleware locally) and never reach the browser bundle.
+Raw and intermediate files go to `%LOCALAPPDATA%/artemis-pipeline/`. Override with `ARTEMIS_RAW_DIR` / `ARTEMIS_WORK_DIR`.
 
-Optional direct campaign overrides:
+## Environment variables
 
-```env
-VITE_KITABISA_RIAU_URL=
-VITE_KITABISA_CENTRAL_KALIMANTAN_URL=
-VITE_KITABISA_INDONESIA_URL=
+Server-side variables are read only by the `/api/*` functions (and the Vite dev server). They never reach the browser.
+
+| Variable | Side | Required | Purpose |
+|---|---|---|---|
+| `FIRMS_API_KEY` | Server | Yes | NASA FIRMS MAP_KEY |
+| `OPENWEATHER_API_KEY` | Server | Yes | OpenWeatherMap current weather |
+| `NEWSDATA_API_KEY` | Server | No | NewsData.io (the legacy name `VITE_NEWSDATA_API_KEY` is still read server-side) |
+| `VITE_CARTO_API_KEY` | Browser | No | CARTO basemap key |
+| `VITE_EVERY_ORG_API_KEY` | Browser | No | Every.org public partner key |
+| `VITE_KITABISA_RIAU_URL`, `VITE_KITABISA_CENTRAL_KALIMANTAN_URL`, `VITE_KITABISA_INDONESIA_URL` | Browser | No | Verified campaign links (built-in defaults exist) |
+| `VITE_DONATION_DISCOVERY_URL` | Browser | No | Optional Python discovery service (`services/donation-discovery`) |
+
+## Deploying to Vercel
+
+`vercel.json` serves the SPA, the static `/data` archive and four functions: `api/firms`, `api/weather`, `api/tle` and `api/news`. Set the server-side variables in **Project → Settings → Environment Variables**.
+
+**Size limit.** The static archive is about 126 MB. On the Hobby plan, Vercel limits CLI uploads to 100 MB of source files, so you have three options:
+- deploy from a Git repository through Vercel's Git integration;
+- use the Pro plan;
+- shrink the archive, for example by gzipping the `hex/` and `forensics/` JSON as the point files already are.
+
+## Project structure
+
+```
+api/                  Vercel functions (thin wrappers)
+server/handlers.ts    Proxy logic shared by the functions and the Vite dev server
+pipeline/             Python archive pipeline and method notes
+public/data/          Processed archive (calendar, hex, points, forensics, static)
+src/pages/            Landing, Dashboard, Impact, Audit
+src/components/       Map, calendar, inspector, impact hub, landing sections
+src/lib/              AOI geometry, calendar data, audit, dossier, haze cone, exports
+src/data/             Typed loaders for the archive and APIs
 ```
 
-Only use verified URLs that open a real campaign or donation form. Do not use the Kitabisa homepage as a campaign URL.
+## Limitations
 
-Run the frontend:
+- Harmonization is a statistical calibration of counts, not a re-detection. α captures the average sensitivity difference per calendar month, not per fire.
+- MODIS Terra's orbit has drifted since 2020. S-NPP and NOAA-20 data after July 2026 are near-real-time products that FIRMS later reprocesses.
+- Satellites miss fires under persistent cloud. The inspector warns when nearby fires seen yesterday are missing today.
+- Detection positions carry pixel-size uncertainty: 375 m (VIIRS) or 1 km (MODIS) at nadir, and more toward the swath edge.
+- The haze cone is straight-line advection from the current surface wind, not a dispersion model.
+- An EUDR PASS screens for burning only. Clearing without fire is not detected.
 
-```powershell
-npm.cmd run dev
-```
-
-The default Vite URL is `http://localhost:5173/`.
-
-Useful frontend commands:
-
-```powershell
-npm.cmd run typecheck
-npm.cmd run lint
-npm.cmd run build
-npm.cmd run preview
-```
-
-### Optional donation discovery service
-
-Install the service dependencies:
-
-```powershell
-py -3 -m pip install -r services\donation-discovery\requirements.txt
-```
-
-Start the service:
-
-```powershell
-Set-Location services\donation-discovery
-py -3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-The service does not require a paid API key when using Google News RSS. To use optional Bing search, set:
-
-```powershell
-$env:BING_SEARCH_API_KEY="your-key"
-```
-
-Then set this frontend value and restart Vite:
-
-```env
-VITE_DONATION_DISCOVERY_URL=http://127.0.0.1:8000
-```
-
-Endpoints:
-
-```text
-GET http://127.0.0.1:8000/health
-GET http://127.0.0.1:8000/campaigns?location=Riau
-```
-
-The service currently allows local development origins on ports 5173, 5174, and 5175. Configure a restricted production origin before deployment.
-
-## Environment Variables
-
-| Variable | Required | Purpose |
-|---|---:|---|
-| `VITE_CARTO_API_KEY` | Optional | CARTO map tile access |
-| `FIRMS_API_KEY` | Yes for live hotspots | NASA FIRMS MAP_KEY (server-side only) |
-| `OPENWEATHER_API_KEY` | Yes for weather | OpenWeatherMap current weather (server-side only) |
-| `VITE_NEWSDATA_API_KEY` | Yes for news | NewsData.io wildfire news |
-| `VITE_EVERY_ORG_API_KEY` | Yes for global donations | Every.org public API key |
-| `VITE_KITABISA_RIAU_URL` | Optional | Override the default Riau campaign |
-| `VITE_KITABISA_CENTRAL_KALIMANTAN_URL` | Optional | Override the default Kalimantan campaign |
-| `VITE_KITABISA_INDONESIA_URL` | Optional | Override the national campaign |
-| `VITE_DONATION_DISCOVERY_URL` | Optional | URL of the Python discovery service |
-
-## Project Structure
-
-```text
-src/
-├── App.tsx                         # Main dashboard orchestration
-├── components/
-│   ├── AboutModal.tsx              # Interactive Artemis and NASA Space Apps overview
-│   ├── DonationCard.tsx            # Direct campaign and map-navigation actions
-│   ├── DonationWidget.tsx          # Location-aware donation container
-│   ├── FireMap.tsx                 # Leaflet map, markers, weather and location bridge
-│   ├── NewsSlider.tsx              # Cached wildfire news feed
-│   ├── WeatherInfoCard.tsx         # Weather and fire-spread risk card
-│   └── ...                         # Dashboard, chart and region components
-├── data/
-│   ├── donationApi.ts              # Local campaigns, Every.org and discovery client
-│   ├── firmsApi.ts                 # NASA FIRMS requests, parsing and live-date filtering
-│   ├── locationApi.ts              # Nominatim geocoding and reverse geocoding
-│   ├── newsDataApi.ts              # NewsData.io query, relevance filter and cache
-│   └── weatherApi.ts               # OpenWeatherMap request and response mapping
-├── index.css                       # Global theme and dashboard styles
-└── leaflet-theme.css               # Leaflet dark theme overrides
-services/
-└── donation-discovery/
-    ├── app/main.py                 # FastAPI discovery and validation service
-    ├── requirements.txt            # Python dependencies
-    └── .env.example                # Optional Bing key placeholder
-```
-
-## Data Freshness and Limitations
-
-- NASA FIRMS is near-real-time and may have processing delay.
-- The map displays the current browser-date observation rather than promising instant detection.
-- OpenWeatherMap describes current conditions at the selected coordinate, not future fire behavior.
-- NewsData.io articles are external reporting and are not incident verification.
-- Nominatim is a public geocoding service and should be rate-limited in production.
-- Donation links are external pages. Artemis does not process payments, verify organizations, or guarantee campaign availability.
-- Automated discovery is a candidate finder, not an official Kitabisa integration.
-- API quotas, CORS policies, third-party outages, and campaign changes can affect availability.
+Artemis is a decision-support tool. Satellite detections are observations, not incident-command instructions or evacuation orders, and they need field confirmation.
 
 ## Team and Event
 
-**Team:** ITS Surabaya — Institut Teknologi Sepuluh Nopember, Indonesia
+**Team:** ITS Surabaya, Institut Teknologi Sepuluh Nopember, Indonesia
 
 ### Contributors
 
@@ -302,6 +197,6 @@ services/
 
 **Event:** [NASA Space Apps Challenge 2026](https://www.spaceappschallenge.org/)
 
-## License and External Services
+## License and external services
 
-Review the license and terms of each external data provider before public deployment. Follow the attribution requirements for OpenStreetMap/Nominatim, CARTO, NASA FIRMS, and every other external service used by the application.
+Review each provider's terms before public deployment, and keep the attributions above (NASA FIRMS, OpenStreetMap / Nominatim / Overpass, CARTO, OpenWeatherMap, NewsData.io, Every.org, CelesTrak, geoBoundaries).

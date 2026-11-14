@@ -10,6 +10,8 @@ import {
 } from '@/lib/audit';
 import { auditCsv, auditSlug, auditStatementHtml } from '@/lib/auditReport';
 import { downloadText } from '@/lib/csvExport';
+import { addCartoBasemap } from '@/lib/basemap';
+import { useInView } from '@/lib/useInView';
 import { decodeAoi, type LatLng } from '@/lib/aoi';
 import { cn } from '@/lib/utils';
 import { btnGhost, btnPrimary } from '@/components/impact/shared';
@@ -50,10 +52,9 @@ function AuditMap({ result }: { result: AuditResult }) {
     // The map needs a view before vector layers are added (Leaflet clips against it).
     const outlines = result.cells.map(cellOutline);
     map.fitBounds(L.latLngBounds([...result.plot.ring, ...outlines.flat()]), { padding: [12, 12] });
-    const key = import.meta.env.VITE_CARTO_API_KEY ? `?key=${import.meta.env.VITE_CARTO_API_KEY}` : '';
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png${key}`, { maxZoom: 17, attribution: '© OpenStreetMap contributors © CARTO' }).addTo(map);
+    addCartoBasemap(map);
     outlines.forEach((o) => L.polygon(o, { color: '#9ca3af', weight: 1, dashArray: '3 3', fill: false, interactive: false }).addTo(map));
-    L.polygon(result.plot.ring, { color: '#f9880f', weight: 2, fillColor: '#f9880f', fillOpacity: 0.12 }).bindTooltip(result.plot.name).addTo(map);
+    L.polygon(result.plot.ring, { color: '#d9831c', weight: 2, fillColor: '#d9831c', fillOpacity: 0.12 }).bindTooltip(result.plot.name).addTo(map);
     (result.post.detections ?? []).forEach((d) =>
       L.circleMarker([d.lat, d.lng], { radius: 3.5, color: '#000', weight: 1, fillColor: '#e31a1c', fillOpacity: 1 })
         .bindTooltip(`${d.date} ${d.time} UTC · ${d.satellite} · ${d.frp.toFixed(1)} MW`)
@@ -69,14 +70,16 @@ function AuditMap({ result }: { result: AuditResult }) {
 function Timeline({ result }: { result: AuditResult }) {
   const max = Math.max(1, ...result.yearly.map((y) => y.value));
   const burned = result.yearly.filter((y) => y.value > 0).map((y) => y.year);
+  const { ref, inView } = useInView<HTMLDivElement>(0.3);
   return (
     <div>
-      <div className="relative flex h-36 items-end gap-[3px]" role="img" aria-label={`Fire cell-days per year, 2000–2026. Burning in ${burned.length ? burned.join(', ') : 'no year'}.`}>
-        {result.yearly.map((y) => (
+      <div ref={ref} className={cn('grow-bars relative flex h-36 items-end gap-[3px]', inView && 'is-visible')} role="img" aria-label={`Fire cell-days per year, 2000–2026. Burning in ${burned.length ? burned.join(', ') : 'no year'}.`}>
+        {result.yearly.map((y, i) => (
           <div key={y.year} className="group relative flex h-full flex-1 items-end" title={`${y.year}: ${y.value.toFixed(1)} cell-days`}>
             <div
+              data-bar
               className={cn('w-full rounded-t-[1px]', y.value === 0 ? 'bg-white/[0.07]' : y.year >= 2021 ? 'bg-[#e31a1c]' : 'bg-[#fdba74]')}
-              style={{ height: y.value === 0 ? 2 : `${Math.max(6, (y.value / max) * 100)}%` }}
+              style={{ height: y.value === 0 ? 2 : `${Math.max(6, (y.value / max) * 100)}%`, ['--i' as string]: i }}
             />
           </div>
         ))}
@@ -176,20 +179,20 @@ export function AuditPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090b] text-white/90">
-      <header className="border-b border-white/[0.1] bg-[#080b0e]">
+    <div className="min-h-screen bg-[#0a0a0a] text-white/90">
+      <header className="border-b border-white/[0.1] bg-[#0c0c0c]">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/dashboard" className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.1em] text-white/70 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5" /> Command center
           </Link>
-          <span className="font-mono text-sm font-bold tracking-[0.08em] text-white">ARTEMIS <span className="text-accent-300">· Audit</span></span>
+          <span className="font-mono text-sm font-bold tracking-[0.08em] text-white">ARTEMIS <span className="text-white/55">· Audit</span></span>
         </div>
       </header>
 
       <main className="mx-auto grid max-w-[1400px] gap-4 px-4 py-5 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="space-y-4">
           <div>
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-accent-300">EUDR & burn-risk audit</p>
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">EUDR & burn-risk audit</p>
             <h1 className="mt-1 font-mono text-xl font-semibold text-white">20-year zero-burn verification</h1>
             <p className="mt-2 text-[13px] leading-5 text-white/65">
               Check a plot boundary against 26 years of harmonized MODIS + VIIRS fire detections and the EUDR cutoff of {EUDR_CUTOFF}.

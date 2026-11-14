@@ -48,9 +48,20 @@ export async function handleFirms(params: URLSearchParams, env: Env): Promise<Pr
   if (!Number.isInteger(days) || days < 1 || days > 5) return text(400, 'days must be 1–5.');
   if (date && !isDate(date)) return text(400, 'date must be YYYY-MM-DD.');
 
+  // FIRMS limits transactions per MAP_KEY. Identical requests within 15 min share
+  // one upstream call (the landing telemetry and the dashboard ask for the same data).
+  const cacheKey = `${product}|${area}|${days}|${date}`;
+  const hit = firmsCache.get(cacheKey);
+  if (hit && Date.now() - hit.at < FIRMS_TTL_MS) {
+    return { status: 200, body: hit.body, contentType: 'text/csv; charset=utf-8', cacheSeconds: 900 };
+  }
   const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${product}/${area}/${days}${date ? `/${date}` : ''}`;
   const response = await fetch(url);
   const body = await response.text();
+  if (response.ok) {
+    if (firmsCache.size > 20) firmsCache.clear();
+    firmsCache.set(cacheKey, { at: Date.now(), body });
+  }
   return {
     status: response.status,
     body,
@@ -58,6 +69,9 @@ export async function handleFirms(params: URLSearchParams, env: Env): Promise<Pr
     cacheSeconds: response.ok ? 900 : undefined,
   };
 }
+
+const FIRMS_TTL_MS = 15 * 60 * 1000;
+const firmsCache = new Map<string, { at: number; body: string }>();
 
 /**
  * GET /api/weather?lat=-0.5&lon=101.4
@@ -86,6 +100,32 @@ export async function handleWeather(params: URLSearchParams, env: Env): Promise<
     body,
     contentType: 'application/json; charset=utf-8',
     cacheSeconds: response.ok ? 600 : undefined,
+  };
+}
+
+/**
+ * GET /api/news
+ * Wildfire news from NewsData.io with the server-held key. Fixed query, so the
+ * endpoint cannot be used as an open NewsData proxy. NEWSDATA_API_KEY is preferred;
+ * the legacy VITE_NEWSDATA_API_KEY name is accepted server-side only.
+ */
+export async function handleNews(_params: URLSearchParams, env: Env): Promise<ProxyResult> {
+  const key = env.NEWSDATA_API_KEY || env.VITE_NEWSDATA_API_KEY;
+  if (!key) return text(500, 'NEWSDATA_API_KEY is not configured on the server.');
+  const query = new URLSearchParams({
+    apikey: key,
+    q: 'wildfire OR "forest fire" OR "kebakaran hutan"',
+    language: 'id,en',
+    category: 'environment',
+    size: '10',
+  });
+  const response = await fetch(`https://newsdata.io/api/1/news?${query.toString()}`);
+  const body = await response.text();
+  return {
+    status: response.status,
+    body,
+    contentType: 'application/json; charset=utf-8',
+    cacheSeconds: response.ok ? 1800 : undefined,
   };
 }
 

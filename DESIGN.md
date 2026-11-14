@@ -2,16 +2,22 @@
 name: ARTEMIS
 description: Night-ops console for harmonized MODIS + VIIRS fire intelligence
 colors:
-  signal-orange: "#f9880f"
-  signal-orange-bright: "#ffab2e"
-  ember: "#ffc75d"
-  ember-pale: "#ffe09a"
-  night-black: "#050505"
-  console-black: "#07090b"
-  header-black: "#080b0e"
+  # KARHUTLA palette (2026): asap, bara, langit oranye
+  karhutla-asap: "#e69430"
+  karhutla-bara: "#d9831c"
+  karhutla-ember: "#c67438"
+  karhutla-rust: "#9e4324"
+  karhutla-char: "#612c25"
+  signal-orange: "#d9831c"
+  ember: "#ecb067"
+  paper: "#ecebe8"
+  ink: "#171717"
+  night-black: "#0a0a0a"
+  console-black: "#0a0a0a"
+  header-black: "#0c0c0c"
   panel-black: "#0b0b0b"
   raised-black: "#111111"
-  ash-text: "#e4e7ec"
+  ash-text: "#e7e7e7"
   hairline: "rgba(255, 255, 255, 0.12)"
   status-clear: "#6ee7b7"
   status-advisory: "#7dd3fc"
@@ -22,11 +28,11 @@ colors:
   sensor-viirs: "#06b6d4"
 typography:
   display:
-    fontFamily: "JetBrains Mono, monospace"
-    fontSize: "3.75rem"
-    fontWeight: 600
-    lineHeight: 1.08
-    letterSpacing: "-0.045em"
+    fontFamily: "Instrument Serif, Georgia, serif"
+    fontSize: "4.5rem"
+    fontWeight: 400
+    lineHeight: 0.98
+    letterSpacing: "-0.01em"
   headline:
     fontFamily: "JetBrains Mono, monospace"
     fontSize: "1.875rem"
@@ -117,12 +123,13 @@ ARTEMIS is a mission-control desk at 3 a.m. The room is dark and quiet so the ey
 
 Density is operational. Emergency managers scan region, anomaly and next action in seconds, so panels are compact, borders are hairlines, and decoration is limited to a faint 40px blueprint grid on the page background and a soft orange glow behind live indicators. Data visualisations are the brightest, most colorful things on screen, which is why their ramps must be colorblind-safe and must never compete with the brand orange.
 
-The aesthetic is binding (see PRODUCT.md): this dark tactical world extends the live prototype at `artemis-1-1.vercel.app`; it does not get a light theme or a softer consumer look.
+The operational app (dashboard, audit, Impact Hub) stays in this dark world. **The landing page is the one exception (user decision, Nov 2026): a light "KARHUTLA paper" page** (#ecebe8 with grain) that frames the dark 3D Earth as a window, uses thermal gradients, fluted glass and liquid-glass cards, and sets headlines in Instrument Serif.
 
 **Key Characteristics:**
-- Near-black layered surfaces (#050505 → #111111) separated by 12%-white hairlines.
-- One brand voice: signal orange, used for primary actions, live indicators and accent text only.
-- JetBrains Mono for every label, headline and number; Inter only for running prose.
+- Neutral near-black surfaces (#0a0a0a → #111111) separated by 12%-white hairlines; neutrals are pure grays, never blue-tinted.
+- Brand oranges come from the KARHUTLA palette (#e69430, #d9831c, #c67438, #9e4324, #612c25) and are reserved for primary actions (Launch command center, Open impact hub, exports), live indicators and data.
+- Instrument Serif for display headlines (landing, section titles); JetBrains Mono for labels and numbers; Inter for prose.
+- Textures: thermal gradient (`.thermal-gradient`, `.thermal-field`), grain (`.grain`), fluted glass (`.fluted-glass`), liquid glass (`LiquidGlass`, landing only, over CSS backgrounds).
 - Tight, technical corners (2–6px); full rounding only for status dots.
 - Status is color-coded and always paired with a text label and icon.
 
@@ -131,17 +138,17 @@ The aesthetic is binding (see PRODUCT.md): this dark tactical world extends the 
 A blackout palette with a single signal color; everything else is status, sensor identity or data.
 
 ### Primary
-- **Signal Orange** (#f9880f): primary buttons, the focus ring, live/active dots, the "harmonized" layer, and selection highlights. It means "attention here" or "this is the action."
-- **Signal Orange Bright** (#ffab2e): hover state of primary actions.
-- **Ember** (#ffc75d) and **Ember Pale** (#ffe09a): accent text on dark (eyebrows, highlighted headline lines, active filter values). Use these, not Signal Orange, when orange text must stay readable at small sizes.
+- **Signal Orange** (#d9831c): primary buttons, the focus ring, live/active dots, the "harmonized" layer, and selection highlights. It means "attention here" or "this is the action."
+- **Signal Orange Bright** (#e69430): hover state of primary actions.
+- **Ember** (#ecb067) and **Ember Pale** (#f1cb98): accent text on dark (eyebrows, highlighted headline lines, active filter values). Use these, not Signal Orange, when orange text must stay readable at small sizes.
 
 ### Neutral
-- **Night Black** (#050505): document background, map canvas, text on orange buttons.
-- **Console Black** (#07090b): app page background on landing and dashboard.
-- **Header Black** (#080b0e): sticky header and top bars (at 95% opacity with backdrop blur).
+- **Night Black** (#0a0a0a): document background, map canvas, text on orange buttons.
+- **Console Black** (#0a0a0a): app page background on landing and dashboard.
+- **Header Black** (#0c0c0c): sticky header and top bars (at 95% opacity with backdrop blur).
 - **Panel Black** (#0b0b0b): standard panel / card surface.
 - **Raised Black** (#111111): stat tiles and tooltips that sit on top of panels.
-- **Ash Text** (#e4e7ec): base text color. Secondary text uses white at 60%, tertiary at 45–55%; never go below 45% for anything a user must read (40% fails AA at label sizes).
+- **Ash Text** (#e7e7e7): base text color. Secondary text uses white at 60%, tertiary at 45–55%; never go below 45% for anything a user must read (40% fails AA at label sizes).
 - **Hairline** (rgba(255,255,255,0.12)): panel borders and dividers; 8–10% for internal dividers.
 
 ### Status (early-warning scale)
@@ -159,7 +166,7 @@ A blackout palette with a single signal color; everything else is status, sensor
 
 ## Typography
 
-**Display Font:** JetBrains Mono (with monospace)
+**Display Font:** Instrument Serif (with Georgia, serif): landing and section headlines only; echoes the italic Artemis wordmark. In the dark app, page titles may use it; panel titles stay mono.
 **Body Font:** Inter (with system-ui, sans-serif)
 **Label/Mono Font:** JetBrains Mono
 
@@ -243,8 +250,8 @@ A full-width band in the status color: 4px left border, 30% border, 5% fill, a s
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep every surface in the near-black range (#050505–#111111) and separate surfaces with hairlines.
-- **Do** reserve Signal Orange (#f9880f) for the single primary action, live indicators and the harmonized data layer.
+- **Do** keep every surface in the near-black range (#0a0a0a–#111111) and separate surfaces with hairlines.
+- **Do** reserve Signal Orange (#d9831c) for the single primary action, live indicators and the harmonized data layer.
 - **Do** set labels, headlines and numbers in JetBrains Mono, with tabular numerals for anything compared.
 - **Do** use Viridis, Cividis or YlOrRd for every quantitative ramp, with a legend and a "Colorblind-safe" label.
 - **Do** pair every status color with its text label and an icon.

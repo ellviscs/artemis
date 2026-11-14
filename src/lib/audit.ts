@@ -11,6 +11,7 @@ import { cellToBoundary, latLngToCell, polygonToCells } from 'h3-js';
 import { fetchArchiveHotspots, fetchHexYear } from '@/data/historyApi';
 import { INDONESIA_PROVINCES } from '@/data/regions';
 import { aoiAreaKm2, aoiContains, archiveCell, haversineKm, type LatLng } from '@/lib/aoi';
+import { platformName } from '@/lib/platforms';
 
 export const EUDR_CUTOFF = '2020-12-31';
 const FIRST_POST_YEAR = 2021;
@@ -65,7 +66,6 @@ export interface AuditResult {
   };
 }
 
-const PLATFORM: Record<string, string> = { N: 'S-NPP', N20: 'NOAA-20', N21: 'NOAA-21', T: 'Terra', A: 'Aqua' };
 
 /** Wilson score interval for a binomial proportion. */
 export function wilson(k: number, n: number, z = 1.96): [number, number] {
@@ -97,11 +97,16 @@ export function cellOutline(cell: string): LatLng[] {
   return cellToBoundary(cell) as LatLng[];
 }
 
-function provinceFor(ring: LatLng[]): { id: string; name: string } | null {
-  const lat = ring.reduce((s, p) => s + p[0], 0) / ring.length;
-  const lng = ring.reduce((s, p) => s + p[1], 0) / ring.length;
-  const p = INDONESIA_PROVINCES.find((r) => lat >= r.bbox.minLat && lat <= r.bbox.maxLat && lng >= r.bbox.minLng && lng <= r.bbox.maxLng);
-  return p ? { id: p.id, name: p.name } : null;
+/**
+ * Detection-archive provinces whose bounding box touches the plot. Boxes overlap
+ * and spill into neighbouring provinces, so this is only a candidate list: runAudit
+ * checks that the loaded points actually cover the plot's burning cells.
+ */
+function candidateProvinces(ring: LatLng[]): { id: string; name: string }[] {
+  const lats = ring.map((p) => p[0]);
+  const lngs = ring.map((p) => p[1]);
+  const [minLat, maxLat, minLng, maxLng] = [Math.min(...lats), Math.max(...lats), Math.min(...lngs), Math.max(...lngs)];
+  return INDONESIA_PROVINCES.filter((r) => maxLat >= r.bbox.minLat && minLat <= r.bbox.maxLat && maxLng >= r.bbox.minLng && minLng <= r.bbox.maxLng).map((p) => ({ id: p.id, name: p.name }));
 }
 
 /** Problems that stop an audit from running, or null. */
@@ -120,10 +125,12 @@ export async function runAudit(plot: AuditPlot, onProgress?: (done: number, tota
   const cells = overlappingCells(ring);
   const cellSet = new Set(cells);
   const sums = new Map<string, number>();
+  /** Post-cutoff cell-days per overlapping cell, to check detection-archive coverage. */
+  const postByCell = new Map<string, number>();
   let done = 0;
-  const province = provinceFor(ring);
+  const provinces = candidateProvinces(ring);
   const postYears = ARCHIVE_YEARS.filter((y) => y >= FIRST_POST_YEAR);
-  const total = ARCHIVE_YEARS.length + (province ? postYears.length : 0);
+  const total = ARCHIVE_YEARS.length + provinces.length * postYears.length;
 
   await Promise.all(
     ARCHIVE_YEARS.map(async (year) => {
@@ -134,6 +141,10 @@ export async function runAudit(plot: AuditPlot, onProgress?: (done: number, tota
         if (idx.has(hex.cell[i])) {
           const key = `${year}-${hex.month[i]}`;
           sums.set(key, (sums.get(key) ?? 0) + hex.value[i]);
+          if (year >= FIRST_POST_YEAR) {
+            const cell = hex.cells[hex.cell[i]];
+            postByCell.set(cell, (postByCell.get(cell) ?? 0) + hex.value[i]);
+          }
         }
       }
       onProgress?.(++done, total);
@@ -141,21 +152,38 @@ export async function runAudit(plot: AuditPlot, onProgress?: (done: number, tota
   );
 
   let detections: AuditDetection[] | null = null;
-  if (province) {
+  let province: { id: string; name: string } | null = null;
+  if (provinces.length) {
     const aoi = { kind: 'polygon' as const, points: ring };
-    const perYear = await Promise.all(
-      postYears.map(async (year) => {
-        const pts = await fetchArchiveHotspots(province.id, year);
-        onProgress?.(++done, total);
-        return pts
-          .filter((p) => !p.static && p.date > EUDR_CUTOFF && aoiContains(aoi, p.lat, p.lon))
-          .map((p) => ({
-            date: p.date, time: p.time, lat: p.lat, lng: p.lon, sensor: p.sensor === 'MODIS' ? 'MODIS' : 'VIIRS',
-            satellite: PLATFORM[p.satellite] ?? p.satellite, confidence: p.conf, frp: p.frp,
-          }));
-      }),
+    const coveredCells = new Set<string>();
+    const found: AuditDetection[] = [];
+    await Promise.all(
+      provinces.flatMap((prov) =>
+        postYears.map(async (year) => {
+          const pts = await fetchArchiveHotspots(prov.id, year);
+          onProgress?.(++done, total);
+          for (const p of pts) {
+            if (p.static || p.date <= EUDR_CUTOFF) continue;
+            const cell = archiveCell(p.lat, p.lon);
+            if (cellSet.has(cell)) coveredCells.add(cell);
+            if (aoiContains(aoi, p.lat, p.lon)) {
+              found.push({
+                date: p.date, time: p.time, lat: p.lat, lng: p.lon, sensor: p.sensor === 'MODIS' ? 'MODIS' : 'VIIRS',
+                satellite: platformName(p.satellite), confidence: p.conf, frp: p.frp,
+              });
+            }
+          }
+        }),
+      ),
     );
-    detections = perYear.flat().sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1));
+    // Detection level is valid only if every overlapping cell that burned after the
+    // cutoff has points in the loaded archives. Otherwise part of the plot lies in a
+    // province without a detection archive, and the cell-level screen is used instead.
+    const uncovered = [...postByCell].some(([cell, v]) => v > 0 && !coveredCells.has(cell));
+    if (!uncovered) {
+      detections = found.sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1));
+      province = provinces.length === 1 ? provinces[0] : { id: provinces.map((p) => p.id).join('+'), name: provinces.map((p) => p.name).join(' / ') };
+    }
   }
 
   const now = new Date();

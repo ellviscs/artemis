@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Circle, CircleDot, Satellite } from 'lucide-react';
 
 import { DonationWidget } from '@/components/DonationWidget';
@@ -41,11 +41,17 @@ function OverpassPanel({ lat, lng }: { lat: number; lng: number }) {
     return () => window.clearInterval(id);
   }, []);
 
-  // Recompute once the soonest pass has ended.
+  // Recompute once the soonest pass has ended; one request at a time.
+  const refreshing = useRef(false);
   useEffect(() => {
-    if (passes?.[0] && passes[0].end.getTime() < now) {
-      predictNextPasses(lat, lng).then(setPasses).catch(() => undefined);
-    }
+    if (refreshing.current || !passes?.[0] || passes[0].end.getTime() >= now) return;
+    refreshing.current = true;
+    predictNextPasses(lat, lng)
+      .then(setPasses)
+      .catch(() => undefined)
+      .finally(() => {
+        refreshing.current = false;
+      });
   }, [now, passes, lat, lng]);
 
   return (
@@ -62,9 +68,9 @@ function OverpassPanel({ lat, lng }: { lat: number; lng: number }) {
               <li key={p.satellite} className="bg-[#0d0d0d] px-3 py-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-white/85">
-                    <Satellite className="h-3.5 w-3.5 text-accent-300" /> {p.satellite}
+                    <Satellite className="h-3.5 w-3.5 text-white/60" /> {p.satellite}
                   </span>
-                  {i === 0 && <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent-300">Soonest</span>}
+                  {i === 0 && <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/75">Soonest</span>}
                 </div>
                 <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-white" aria-live={i === 0 ? 'off' : undefined}>
                   {inPass ? 'Overhead now' : formatCountdown(toPeak)}

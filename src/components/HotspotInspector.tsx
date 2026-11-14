@@ -6,6 +6,7 @@ import { MONTH_LABELS, fetchForensicCell, type ForensicCell } from '@/data/histo
 import { reverseGeocode } from '@/data/locationApi';
 import { haversineKm } from '@/lib/aoi';
 import { cn } from '@/lib/utils';
+import { useInView } from '@/lib/useInView';
 import type { FireHotspot } from '@/types';
 
 export interface InspectTarget {
@@ -65,15 +66,17 @@ function FeatureRow({ name, weight, value, detail }: { name: string; weight: num
 function HistoryBars({ f }: { f: ForensicCell }) {
   const max = Math.max(1, ...f.yearly);
   const peakIdx = f.yearly.indexOf(max);
+  const { ref, inView } = useInView<HTMLDivElement>(0.2);
   return (
     <div>
-      <div className="flex h-14 items-end gap-[2px]" role="img" aria-label={`Fire cell-days per year in this cell, ${f.years[0]}–${f.years[f.years.length - 1]}. Peak ${f.years[peakIdx]} with ${max}.`}>
+      <div ref={ref} className={cn('grow-bars flex h-14 items-end gap-[2px]', inView && 'is-visible')} role="img" aria-label={`Fire cell-days per year in this cell, ${f.years[0]}–${f.years[f.years.length - 1]}. Peak ${f.years[peakIdx]} with ${max}.`}>
         {f.yearly.map((v, i) => (
           <div
             key={f.years[i]}
+            data-bar
             title={`${f.years[i]}: ${v} fire cell-days`}
-            className={cn('flex-1 rounded-t-[1px]', v === 0 ? 'bg-white/[0.06]' : i === peakIdx ? 'bg-[#ffc75d]' : 'bg-white/45')}
-            style={{ height: v === 0 ? 2 : `${Math.max(8, (v / max) * 100)}%` }}
+            className={cn('flex-1 rounded-t-[1px]', v === 0 ? 'bg-white/[0.06]' : i === peakIdx ? 'bg-[#ecb067]' : 'bg-white/45')}
+            style={{ height: v === 0 ? 2 : `${Math.max(8, (v / max) * 100)}%`, ['--i' as string]: i }}
           />
         ))}
       </div>
@@ -95,7 +98,8 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
 
   useEffect(() => {
     headingRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    // A modal opened on top (the Impact Hub) handles its own Escape.
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !document.querySelector('[role="dialog"][aria-modal="true"]') && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -134,7 +138,7 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
       aria-labelledby="inspector-title"
       className="fixed inset-x-0 bottom-0 z-[1500] flex max-h-[85vh] flex-col border-t border-white/[0.14] bg-[#0b0b0b] shadow-[0_-24px_80px_rgba(0,0,0,0.55)] animate-slide-down sm:inset-x-auto sm:bottom-0 sm:right-0 sm:top-0 sm:max-h-none sm:w-[26rem] sm:border-l sm:border-t-0 sm:shadow-[-24px_0_80px_rgba(0,0,0,0.45)]"
     >
-      <header className="flex items-start justify-between gap-3 border-b border-[#9dadbe]/15 px-4 py-3">
+      <header className="flex items-start justify-between gap-3 border-b border-[#a3a3a3]/15 px-4 py-3">
         <div className="min-w-0">
           <h2 id="inspector-title" ref={headingRef} tabIndex={-1} className="font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-white/90 outline-none">
             Hotspot inspector
@@ -249,7 +253,7 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
                   type="button"
                   onClick={() => setShowMethod((v) => !v)}
                   aria-expanded={showMethod}
-                  className="mt-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[#ffc75d] hover:text-[#ffe09a]"
+                  className="mt-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[#ecb067] hover:text-[#ffe09a]"
                 >
                   <Info className="h-3.5 w-3.5" /> {showMethod ? 'Hide method' : 'How this is scored'}
                 </button>
@@ -302,14 +306,14 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
         <button
           type="button"
           onClick={() => (onOpenImpact ? onOpenImpact() : navigate(`/impact?lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`))}
-          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-accent-400/50 px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-200 hover:bg-accent-400/10"
+          className="flex items-center justify-center gap-1.5 rounded-[6px] bg-accent-500 px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-black hover:bg-accent-400"
         >
           <HandHeart className="h-3.5 w-3.5" /> Open impact hub
         </button>
         <button
           type="button"
           onClick={() => navigate(`/audit?cell=${target.cell}&lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`)}
-          className="flex items-center justify-center gap-1.5 rounded-[6px] bg-accent-500 px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-black hover:bg-accent-400"
+          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-white/[0.18] px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/80 hover:border-white/35 hover:text-white"
         >
           Run compliance audit
         </button>

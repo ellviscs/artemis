@@ -6,6 +6,8 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        // Display serif that echoes the italic Artemis wordmark; headlines only.
+        display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       colors: {
         // Primary — neutral aerospace grayscale
@@ -36,19 +38,29 @@ export default {
           900: '#202020',
           950: '#141414',
         },
-        // Accent — warm amber/orange (fire theme)
+        // Accent: KARHUTLA palette (asap, bara, langit oranye). Reserve for primary actions.
         accent: {
-          50: '#fff9ed',
-          100: '#fff1cd',
-          200: '#ffe09a',
-          300: '#ffc75d',
-          400: '#ffab2e',
-          500: '#f9880f',
-          600: '#dd6805',
-          700: '#b74a07',
-          800: '#94390e',
-          900: '#79310f',
-          950: '#451704',
+          50: '#fcf5ec',
+          100: '#f8e6cd',
+          200: '#f1cb98',
+          300: '#ecb067',
+          400: '#e69430', // KARHUTLA #E69430
+          500: '#d9831c', // KARHUTLA #D9831C
+          600: '#c67438', // KARHUTLA #C67438
+          700: '#9e4324', // KARHUTLA #9E4324
+          800: '#7c3724',
+          900: '#612c25', // KARHUTLA #612C25
+          950: '#3a1a16',
+        },
+        // Named KARHUTLA swatches for gradients and illustration.
+        karhutla: {
+          asap: '#e69430',
+          bara: '#d9831c',
+          ember: '#c67438',
+          rust: '#9e4324',
+          char: '#612c25',
+          paper: '#ecebe8',
+          ink: '#171717',
         },
         // Success — green
         success: {
@@ -114,6 +126,8 @@ export default {
         'shimmer': 'shimmer 2s linear infinite',
         'scale-in': 'scaleIn 0.2s ease-out',
         'spin-slow': 'spin 3s linear infinite',
+        'ticker': 'ticker var(--ticker-duration, 60s) linear infinite',
+        'panel-in': 'panelIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1)',
       },
       keyframes: {
         fadeIn: {
@@ -136,6 +150,14 @@ export default {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        ticker: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        panelIn: {
+          '0%': { opacity: '0', transform: 'translateY(6px)', filter: 'blur(3px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+        },
         scaleIn: {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
@@ -144,7 +166,7 @@ export default {
       boxShadow: {
         'card': '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.06)',
         'card-hover': '0 10px 30px -10px rgba(0,0,0,0.25), 0 2px 6px -2px rgba(0,0,0,0.08)',
-        'glow-accent': '0 0 20px rgba(249,136,15,0.3)',
+        'glow-accent': '0 0 20px rgba(217,131,28,0.3)',
         'glow-error': '0 0 20px rgba(239,68,68,0.3)',
         'inner-glow': 'inset 0 1px 0 0 rgba(255,255,255,0.05)',
       },

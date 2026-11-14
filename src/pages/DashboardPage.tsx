@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, ExternalLink, Database } from 'lucide-react';
-import artemisLogo from '@/logo/Artemis.jpg';
+import artemisWordmark from '@/logo/artemis-wordmark-light.png';
 
 import {
   createLiveDailySummary,
@@ -22,8 +22,6 @@ import { currentYearMonth, ymKey } from '@/state/yearMonth';
 import { LiveEarlyWarningPanel } from '@/components/LiveEarlyWarningPanel';
 import { FireMap } from '@/components/FireMap';
 import { AboutModal } from '@/components/AboutModal';
-import { NewsSlider } from '@/components/NewsSlider';
-import { fetchDisasterNews, type DisasterNewsArticle } from '@/data/newsDataApi';
 import { ImpactHub } from '@/components/impact/ImpactHub';
 import { HazeConeLayer } from '@/components/impact/HazeConeLayer';
 import type { HazeConeGeometry } from '@/lib/hazeCone';
@@ -45,9 +43,6 @@ function Dashboard() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [liveData, setLiveData] = useState<LiveFireData | null>(null);
   const [liveError, setLiveError] = useState<string | null>(null);
-  const [disasterReports, setDisasterReports] = useState<DisasterNewsArticle[]>([]);
-  const [disasterError, setDisasterError] = useState<string | null>(null);
-  const [isDisasterLoading, setIsDisasterLoading] = useState(true);
   const [, setCurrentLocation] = useState('Indonesia');
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
@@ -67,25 +62,6 @@ function Dashboard() {
       });
     return () => { cancelled = true; };
   }, []);
-
-  const loadDisasterReports = useCallback(() => {
-    const controller = new AbortController();
-    setIsDisasterLoading(true);
-    setDisasterError(null);
-    fetchDisasterNews(controller.signal)
-      .then(setDisasterReports)
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted) {
-          setDisasterError(error instanceof Error ? error.message : 'Unable to load NewsData.io articles.');
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsDisasterLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => loadDisasterReports(), [loadDisasterReports]);
 
   useEffect(() => {
     if (!liveData) return;
@@ -134,27 +110,24 @@ function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#07090b] text-white/90 font-sans">
+    <div className="min-h-screen bg-[#0a0a0a] text-white/90 font-sans">
       {/* ─── Header ─── */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.1] bg-[#080b0e]/95 shadow-[0_8px_30px_rgba(0,0,0,0.2)] backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-white/[0.1] bg-[#0c0c0c]/95 shadow-[0_8px_30px_rgba(0,0,0,0.2)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-5 px-4 py-3 sm:px-6 lg:py-3.5">
           <Link
             to="/"
             className="group flex min-w-0 items-center gap-3 text-left transition-opacity hover:opacity-85"
           >
-            <img
-              src={artemisLogo}
-              alt="Artemis"
-              className="h-9 w-[4.5rem] shrink-0 rounded-md border border-accent-400/30 bg-black object-cover object-[center_48%] shadow-[0_0_24px_rgba(240,138,36,0.14)] sm:h-10 sm:w-20"
-            />
-            <div className="min-w-0">
+            <h1 className="shrink-0">
+              <img src={artemisWordmark} alt="Artemis" width={1200} height={326} className="h-7 w-auto sm:h-8" />
+            </h1>
+            <div className="min-w-0 border-l border-white/[0.12] pl-3">
               <div className="flex items-center gap-2">
-                <h1 className="font-mono text-sm font-bold tracking-[0.08em] text-white sm:text-base">ARTEMIS</h1>
-                <span className="hidden rounded border border-accent-400/25 bg-accent-400/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-accent-300 sm:inline">
+                <span className="hidden rounded border border-white/[0.16] bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:inline">
                   Monitor
                 </span>
               </div>
-              <p className="truncate font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-white/40 sm:text-[10px]">
+              <p className="truncate font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
                 Satellite fire intelligence
               </p>
             </div>
@@ -162,21 +135,21 @@ function Dashboard() {
 
           <div className="hidden min-w-0 items-center gap-3 lg:flex">
             <div className="border-l border-white/[0.12] pl-4">
-              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white/35">Operational console</div>
+              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white/55">Operational console</div>
               <div className="mt-0.5 text-xs text-white/65">Global fire monitoring desk</div>
             </div>
             <div className="h-8 w-px bg-white/[0.1]" />
             <div className="flex items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-3 py-2">
-              <Database className="h-3.5 w-3.5 text-accent-300" />
+              <Database className="h-3.5 w-3.5 text-white/60" />
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/35">Sensors</div>
+                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/55">Sensors</div>
                 <div className="font-mono text-[10px] font-semibold text-white/75">MODIS + VIIRS</div>
               </div>
             </div>
             <div className="flex items-center gap-2 rounded-md border border-emerald-400/15 bg-emerald-400/[0.06] px-3 py-2">
               <span className={`h-2 w-2 rounded-full ${liveData ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]' : 'bg-amber-400'}`} />
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/35">Feed status</div>
+                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/55">Feed status</div>
                 <div className="font-mono text-[10px] font-semibold text-emerald-200/80">{liveData ? 'NASA FIRMS live' : 'Connecting'}</div>
               </div>
             </div>
@@ -198,7 +171,7 @@ function Dashboard() {
             </Link>
             <button
               onClick={() => setIsAboutOpen(true)}
-              className="rounded-md border border-accent-400/35 bg-accent-400/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-200 transition-colors hover:bg-accent-400/20"
+              className="rounded-md border border-white/[0.16] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/75 transition-colors hover:bg-white/[0.06]"
             >
               About Artemis
             </button>
@@ -206,7 +179,7 @@ function Dashboard() {
 
           <button
             onClick={() => setIsAboutOpen(true)}
-            className="rounded-md border border-accent-400/35 bg-accent-400/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-200 transition-colors hover:bg-accent-400/20 lg:hidden"
+            className="rounded-md border border-white/[0.16] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/75 transition-colors hover:bg-white/[0.06] lg:hidden"
           >
             About
           </button>
@@ -217,10 +190,10 @@ function Dashboard() {
       {/* ─── Main Content ─── */}
       <main className="mx-auto max-w-[1600px] px-3 py-4 sm:px-6 sm:py-5">
         {/* Page context */}
-        <section className="mb-4 flex flex-col justify-between gap-4 border-b border-[#9dadbe]/20 pb-4 lg:flex-row lg:items-end">
+        <section className="mb-4 flex flex-col justify-between gap-4 border-b border-[#a3a3a3]/20 pb-4 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
-            <div className="terminal-label mb-2 flex items-center gap-2 text-xs font-semibold text-accent-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-500 shadow-[0_0_10px_rgba(249,136,15,0.8)]" />
+            <div className="terminal-label mb-2 flex items-center gap-2 text-xs font-semibold text-white/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-500 shadow-[0_0_10px_rgba(217,131,28,0.8)]" />
               Fire intelligence desk
             </div>
             <h2 className="font-mono text-xl font-semibold tracking-[-0.035em] text-white sm:text-3xl">
@@ -231,8 +204,8 @@ function Dashboard() {
               reports, and access direct relief campaigns matched to the selected disaster area.
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-white/35 sm:gap-3">
-            <span className="rounded border border-white/[0.12] bg-[#10161b] px-3 py-1.5 font-mono text-xs text-white/60">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-white/55 sm:gap-3">
+            <span className="rounded border border-white/[0.12] bg-[#151515] px-3 py-1.5 font-mono text-xs text-white/60">
               Live observation · browser date
             </span>
             <span className="hidden items-center gap-1.5 sm:flex">
@@ -283,7 +256,7 @@ function Dashboard() {
               <p className="mt-2 text-sm leading-6 text-white/60">{region.description}</p>
               <div className="mt-4 flex items-center justify-between border-t border-white/[0.1] pt-3 text-xs">
                 <span className="text-white/50">Fire season</span>
-                <span className="font-medium text-accent-300">
+                <span className="font-medium text-white/85">
                   {region.fireSeason.startMonth === 1 && region.fireSeason.endMonth === 12
                     ? 'Year-round'
                     : `${getMonthAbbr(region.fireSeason.startMonth)} – ${getMonthAbbr(region.fireSeason.endMonth)}`}
@@ -317,31 +290,23 @@ function Dashboard() {
         </div>
 
 
-        {/* Donations now live in the Impact Hub (Branch 1), opened from any hotspot. */}
-        <section className="mt-3">
-          <NewsSlider
-            articles={disasterReports}
-            isLoading={isDisasterLoading}
-            error={disasterError}
-            onRetry={loadDisasterReports}
-          />
-        </section>
+        {/* Donations live in the Impact Hub (Branch 1); the news feed is on the landing page. */}
 
         {/* Footer */}
         <footer className="mt-12 border-t border-white/[0.04] pt-6 pb-8">
           <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex items-center gap-2 text-xs text-white/20">
+            <div className="flex items-center gap-2 text-xs text-white/55">
               <Flame className="h-3.5 w-3.5 text-amber-500/60" />
-              <span className="font-semibold text-white/30">Artemis</span>
-              <span className="text-white/10">·</span>
+              <span className="font-semibold text-white/55">Artemis</span>
+              <span className="text-white/55">·</span>
               <span>Harmonized Active Fire Hotspot Analysis</span>
             </div>
-            <p className="max-w-2xl text-[10px] leading-relaxed text-white/15">
+            <p className="max-w-2xl text-[10px] leading-relaxed text-white/55">
               Current-day data is fetched from NASA FIRMS MODIS NRT and VIIRS NRT
               (NOAA-20 and NOAA-21). Harmonization is calculated in the browser from those
               live detections; no simulated historical values are shown in this dashboard.
             </p>
-            <div className="flex items-center gap-3 text-[10px] text-white/10">
+            <div className="flex items-center gap-3 text-[10px] text-white/55">
               <span>MODIS Collection 6.1</span>
               <span>·</span>
               <span>VIIRS NOAA-20/21 I-band</span>

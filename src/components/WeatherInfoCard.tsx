@@ -30,7 +30,7 @@ export function WeatherInfoCard({
       aria-live="polite"
       className={embedded
         ? 'rounded-[4px] border border-white/[0.12] bg-[#111111] p-4 text-white'
-        : 'pointer-events-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-xl border border-white/[0.12] bg-[#0b0d0b]/95 p-4 text-white shadow-2xl backdrop-blur-md'}
+        : 'pointer-events-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-xl border border-white/[0.12] bg-[#0e0e0e]/95 p-4 text-white shadow-2xl backdrop-blur-md'}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">

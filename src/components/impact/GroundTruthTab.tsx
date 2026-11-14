@@ -90,7 +90,7 @@ export function GroundTruthTab({ ctx }: { ctx: HubContext }) {
     <div className="grid gap-4 lg:grid-cols-[20rem_minmax(0,1fr)]">
       <Panel title="SMS / WhatsApp bot preview" tag={<SimTag />}>
         <Hint>How an MPA patrol with no data signal gets the alert and answers with one digit.</Hint>
-        <div className="mt-3 rounded-[6px] border border-white/[0.14] bg-[#0a0d0f] p-3">
+        <div className="mt-3 rounded-[6px] border border-white/[0.14] bg-[#0c0c0c] p-3">
           <div className="mb-2 flex items-center gap-2 border-b border-white/[0.08] pb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-white/55">
             <MessageSquareText className="h-3.5 w-3.5" /> ARTEMIS · +62 SMS gateway
           </div>

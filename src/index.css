@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import './leaflet-theme.css';
 
 @tailwind base;
@@ -12,8 +12,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #050505;
-  color: #e4e7ec;
+  background: #0a0a0a;
+  color: #e7e7e7;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -53,7 +53,7 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(249, 136, 15, 0.2);
+  background: rgba(217, 131, 28, 0.28);
   color: #fff;
 }
 
@@ -68,7 +68,7 @@ body {
 
 /* Glass surface */
 .glass {
-  background: rgba(8, 11, 14, 0.94);
+  background: rgba(12, 12, 12, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -139,7 +139,122 @@ input:focus, button:focus, select:focus {
 }
 
 input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible {
-  outline: 2px solid #f9880f;
+  outline: 2px solid #e69430;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px rgba(249, 136, 15, 0.18);
+  box-shadow: 0 0 0 4px rgba(230, 148, 48, 0.2);
+}
+
+/* ─── KARHUTLA textures ─────────────────────────────────────────────────────
+   Thermal gradient, grain and fluted glass. Grain is an SVG turbulence tile so
+   it costs no network request and survives html2canvas (it is an image). */
+:root {
+  --karhutla-asap: #e69430;
+  --karhutla-bara: #d9831c;
+  --karhutla-ember: #c67438;
+  --karhutla-rust: #9e4324;
+  --karhutla-char: #612c25;
+  --paper: #ecebe8;
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.thermal-gradient {
+  background: linear-gradient(180deg, var(--karhutla-asap) 0%, var(--karhutla-bara) 22%, var(--karhutla-ember) 48%, var(--karhutla-rust) 72%, var(--karhutla-char) 100%);
+}
+
+/* Soft blobs of heat, for backgrounds behind glass. */
+.thermal-field {
+  background:
+    radial-gradient(60% 70% at 18% 30%, rgba(230, 148, 48, 0.85), transparent 70%),
+    radial-gradient(45% 60% at 78% 20%, rgba(198, 116, 56, 0.75), transparent 70%),
+    radial-gradient(55% 65% at 62% 85%, rgba(158, 67, 36, 0.8), transparent 72%),
+    linear-gradient(180deg, #e9d6bf, #d9b48a);
+}
+
+.grain {
+  position: relative;
+  isolation: isolate;
+}
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--grain);
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* Fluted (reeded) glass: vertical ribs that bend and blur what is behind. */
+.fluted-glass {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.16) 0px,
+      rgba(255, 255, 255, 0.02) 6px,
+      rgba(0, 0, 0, 0.08) 12px,
+      rgba(255, 255, 255, 0.16) 18px);
+}
+
+/* Telemetry ticker: the track holds the items twice and slides by half its width. */
+.ticker-track { animation: ticker var(--ticker-duration, 60s) linear infinite; }
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track { animation-play-state: paused; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Scroll-in chart animations (toggled by useInView). */
+.chart-draw path[data-draw] { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s cubic-bezier(0.3, 0.6, 0.2, 1); }
+.chart-draw.is-visible path[data-draw] { stroke-dashoffset: 0; }
+.chart-draw path[data-draw='2'] { transition-delay: 0.25s; }
+.grow-bars [data-bar] { transform: scaleY(0); transform-origin: bottom; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); transition-delay: calc(var(--i, 0) * 22ms); }
+.grow-bars.is-visible [data-bar] { transform: scaleY(1); }
+.slide-marks [data-mark] { opacity: 0; transform: translate(-50%, -6px); transition: opacity 0.5s, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); transition-delay: calc(var(--i, 0) * 140ms + 0.2s); }
+.slide-marks.is-visible [data-mark] { opacity: 1; transform: translate(-50%, 0); }
+.slide-marks [data-fill] { transform: scaleX(0); transform-origin: left; transition: transform 1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.slide-marks.is-visible [data-fill] { transform: scaleX(1); }
+
+/* ─── Page transition: a wisp of ember smoke rises over the page and clears ─ */
+.page-stage { animation: pageEnter 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.page-stage.is-exiting { animation: pageExit 0.32s ease-in both; }
+@keyframes pageEnter { from { opacity: 0; transform: translateY(10px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes pageExit { to { opacity: 0; transform: translateY(-6px); filter: blur(5px); } }
+
+.smoke-veil {
+  position: fixed;
+  inset: -20% -10%;
+  z-index: 3000;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 30% at 30% 80%, rgba(230, 148, 48, 0.55), transparent 70%),
+    radial-gradient(35% 28% at 70% 75%, rgba(158, 67, 36, 0.5), transparent 70%),
+    radial-gradient(60% 45% at 50% 55%, rgba(40, 32, 28, 0.55), transparent 75%);
+  filter: blur(28px);
+  opacity: 0;
+}
+.smoke-veil::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  background-size: 220px 220px;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+.smoke-veil.is-exiting { animation: smokeIn 0.32s ease-in forwards; }
+.smoke-veil.is-entering { animation: smokeOut 0.75s ease-out forwards; }
+@keyframes smokeIn { from { opacity: 0; transform: translateY(18%) scale(0.95); } to { opacity: 1; transform: translateY(4%) scale(1.02); } }
+@keyframes smokeOut { from { opacity: 1; transform: translateY(4%) scale(1.02); } to { opacity: 0; transform: translateY(-14%) scale(1.08); } }
+
+/* Impact Hub tab panels fade in on switch. */
+.tab-panel-in { animation: panelIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track, .page-stage, .page-stage.is-exiting, .smoke-veil, .tab-panel-in { animation: none !important; }
+  .smoke-veil { display: none; }
+  .chart-draw path[data-draw], .grow-bars [data-bar], .slide-marks [data-mark], .slide-marks [data-fill] { transition: none !important; stroke-dashoffset: 0 !important; transform: none !important; opacity: 1 !important; }
 }

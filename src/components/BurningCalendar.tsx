@@ -338,7 +338,7 @@ export function BurningCalendar() {
 
   return (
     <section aria-labelledby="calendar-title" className="terminal-surface rounded-[4px]">
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[#9dadbe]/15 px-4 py-3">
+      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[#a3a3a3]/15 px-4 py-3">
         <div className="min-w-0">
           <h2 id="calendar-title" className="flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.06em] text-white/90">
             <CalendarDays className="h-4 w-4 text-white/45" />
@@ -512,7 +512,7 @@ export function BurningCalendar() {
                         {Array.from({ length: 12 }, (_, i) => {
                           const c = data.cells.get(cellKey(year, i + 1));
                           return (
-                            <td key={i} className={cn('px-2 py-1 text-right text-white/75', c && !inRange(year, i + 1) && 'text-white/25')}>
+                            <td key={i} className={cn('px-2 py-1 text-right text-white/75', c && !inRange(year, i + 1) && 'text-white/45')}>
                               {c ? fmt(valueOf(c)) : ''}
                             </td>
                           );

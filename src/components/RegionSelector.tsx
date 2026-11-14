@@ -59,7 +59,7 @@ export function RegionSelector({ selectedRegion, onSelect }: RegionSelectorProps
 
       {open && (
         <div
-          className="absolute left-0 right-0 z-[2100] mt-2 max-w-full overflow-hidden rounded-xl border border-[#9dadbe]/25 bg-[#0d1115] shadow-[0_18px_45px_rgba(0,0,0,0.55)] animate-scale-in"
+          className="absolute left-0 right-0 z-[2100] mt-2 max-w-full overflow-hidden rounded-xl border border-[#a3a3a3]/25 bg-[#0d1115] shadow-[0_18px_45px_rgba(0,0,0,0.55)] animate-scale-in"
         >
           <div className="max-h-[min(32rem,70vh)] overflow-y-auto p-1.5">
             {groups.map((group) => {

@@ -73,10 +73,10 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
 
   const body = (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="border-b border-[#9dadbe]/15 px-4 py-3 sm:px-5">
+      <header className="border-b border-[#a3a3a3]/15 px-4 py-3 sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-accent-300">Impact hub</p>
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">Impact hub</p>
             <h2 id="impact-title" ref={headingRef} tabIndex={-1} className="mt-1 truncate text-base font-semibold text-white outline-none sm:text-lg">
               {ctx.place ?? 'Locating…'}
             </h2>
@@ -128,7 +128,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
             onKeyDown={onTabKey}
             className={cn(
               'flex min-w-0 flex-1 items-baseline gap-2 whitespace-nowrap px-3 py-2.5 text-left font-mono text-[11px] uppercase tracking-[0.08em] transition-colors',
-              tab === t.id ? 'bg-[#0b0b0b] text-white shadow-[inset_0_-2px_0_#f9880f]' : 'bg-[#080808] text-white/60 hover:text-white/85',
+              tab === t.id ? 'bg-[#0b0b0b] text-white shadow-[inset_0_-2px_0_#d9831c]' : 'bg-[#080808] text-white/60 hover:text-white/85',
             )}
           >
             <span className={tab === t.id ? 'text-accent-300' : 'text-white/45'}>{t.num}</span>
@@ -138,7 +138,7 @@ export function ImpactHub({ target, liveHotspots, variant, initialTab = 'escrow'
         ))}
       </div>
 
-      <div id={`hub-panel-${tab}`} role="tabpanel" aria-labelledby={`hub-tab-${tab}`} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+      <div key={tab} id={`hub-panel-${tab}`} role="tabpanel" aria-labelledby={`hub-tab-${tab}`} className="tab-panel-in min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
         {tab === 'escrow' && <EscrowTab ctx={ctx} onViewLocation={onViewLocation} />}
         {tab === 'ground' && <GroundTruthTab ctx={ctx} />}
         {tab === 'haze' && <HazeShieldTab ctx={ctx} onShowCone={onShowCone} />}

@@ -1,205 +1,192 @@
-import { useState } from 'react';
-import { ArrowRight, CloudSun, Flame, HeartHandshake, MapPinned, Newspaper, Satellite, Sparkles } from 'lucide-react';
-import artemisLogo from '@/logo/Artemis.jpg';
+import { lazy, Suspense, useCallback, useState, type ReactNode } from 'react';
+import { ArrowRight, CloudSun, HeartHandshake, Newspaper, Satellite, ShieldCheck } from 'lucide-react';
+
+import { FeaturePreviews, TelemetryStrip, TuningPanel } from '@/components/LandingExtras';
+import { DEFAULT_EARTH, type EarthTuning } from '@/components/landing/earthTuning';
+import artemisWordmark from '@/logo/artemis-wordmark-ink.png';
+import { cn } from '@/lib/utils';
+
+// three.js is large: load the globe as its own chunk after first paint.
+const EarthHero = lazy(() => import('@/components/landing/EarthHero'));
 
 interface ArtemisLandingProps {
   onEnterConsole: () => void;
   onOpenAbout: () => void;
+  onOpen: (path: string) => void;
+  news?: ReactNode;
 }
 
 const solutionCards = [
-  {
-    icon: Satellite,
-    title: 'Signals arrive fragmented',
-    description: 'Artemis combines MODIS and VIIRS observations into one clearer view of active fire activity.',
-  },
-  {
-    icon: CloudSun,
-    title: 'Hotspots lack context',
-    description: 'Select a hotspot to connect satellite detections with local weather and fire-spread conditions.',
-  },
-  {
-    icon: Newspaper,
-    title: 'Response information is scattered',
-    description: 'Follow relevant wildfire reporting and understand what is happening around the monitored area.',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Relief access is difficult to find',
-    description: 'Reach verified direct relief campaigns and nonprofit support matched to the selected disaster area.',
-  },
+  { icon: Satellite, title: 'Signals arrive fragmented', description: 'Artemis combines MODIS and VIIRS observations into one comparable 26-year record of fire activity.' },
+  { icon: CloudSun, title: 'Hotspots lack context', description: 'Select a hotspot to see its 20-year history, current wind, and where its smoke will drift.' },
+  { icon: Newspaper, title: 'Response information is scattered', description: 'Satellite signals, field reports and wildfire news sit side by side, so teams see the same picture.' },
+  { icon: HeartHandshake, title: 'Relief access is difficult to find', description: 'Every hotspot leads to an action: prevention funds, ground truth, haze warnings or verified relief campaigns.' },
 ];
 
-export function ArtemisLanding({ onEnterConsole, onOpenAbout }: ArtemisLandingProps) {
+const primaryBtn =
+  'inline-flex items-center justify-center gap-2 rounded-[6px] bg-accent-500 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] text-karhutla-ink shadow-[0_10px_30px_-10px_rgba(158,67,36,0.6)] transition-colors hover:bg-accent-400';
+const secondaryBtn =
+  'inline-flex items-center justify-center gap-2 rounded-[6px] border border-neutral-900/25 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-neutral-900 transition-colors hover:border-neutral-900/60 hover:bg-white/50';
+
+export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: ArtemisLandingProps) {
   const [activeSolution, setActiveSolution] = useState(0);
-  const selectedSolution = solutionCards[activeSolution];
+  const [liveCount, setLiveCount] = useState<number | null>(null);
+  const [earth, setEarth] = useState<EarthTuning>(DEFAULT_EARTH);
+  const tuning = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tune');
+  const onCount = useCallback((n: number) => setLiveCount(n), []);
+  const selected = solutionCards[activeSolution];
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#07090b] text-white/90">
-      <header className="border-b border-white/[0.1] bg-[#080b0e]/90 backdrop-blur-xl">
+    <div className="min-h-screen overflow-hidden bg-karhutla-paper text-neutral-900">
+      <header className="relative z-20 border-b border-neutral-900/10 bg-karhutla-paper/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 sm:px-8">
-          <button onClick={onOpenAbout} className="group flex items-center gap-3 text-left">
-            <img
-              src={artemisLogo}
-              alt="Artemis"
-              className="h-10 w-20 rounded-md border border-accent-400/30 object-cover object-[center_48%]"
-            />
-            <div>
-              <div className="font-mono text-sm font-bold tracking-[0.12em] text-white">ARTEMIS</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/40">Fire intelligence platform</div>
-            </div>
+          <button onClick={onOpenAbout} className="flex items-center gap-3 text-left" aria-label="About Artemis">
+            <img src={artemisWordmark} alt="Artemis" width={1200} height={326} className="h-8 w-auto sm:h-9" />
           </button>
-          <button
-            onClick={onOpenAbout}
-            className="rounded-md border border-white/[0.14] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/60 transition-colors hover:border-accent-400/40 hover:text-accent-200"
-          >
-            About Artemis
-          </button>
+          <nav className="flex items-center gap-1 sm:gap-2" aria-label="Main">
+            <button onClick={() => onOpen('/audit')} className="hidden rounded-[6px] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-700 transition-colors hover:text-neutral-950 sm:block">
+              EUDR audit
+            </button>
+            <button onClick={onOpenAbout} className="rounded-[6px] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-700 transition-colors hover:text-neutral-950">
+              About
+            </button>
+            <button onClick={onEnterConsole} className="ml-1 rounded-[6px] bg-karhutla-ink px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-colors hover:bg-neutral-800">
+              Console
+            </button>
+          </nav>
         </div>
       </header>
 
       <main>
-        <section className="relative mx-auto grid max-w-[1440px] gap-10 px-5 pb-16 pt-16 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:items-center lg:gap-20 lg:pb-24 lg:pt-24">
-          <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-accent-500/10 blur-3xl" />
-          <div className="relative">
-            <div className="mb-5 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-accent-300">
-              <span className="h-2 w-2 rounded-full bg-accent-400 shadow-[0_0_14px_rgba(249,136,15,0.8)]" />
-              From detection to informed action
+        <section className="grain relative">
+          {/* A faint thermal haze behind the globe window. */}
+          <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(230,148,48,0.45), rgba(198,116,56,0.18) 45%, transparent 70%)' }} />
+          <div className="relative z-[2] mx-auto grid max-w-[1440px] gap-10 px-5 pb-14 pt-12 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-14 lg:pb-20 lg:pt-16">
+            <div>
+              <div className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
+                From detection to informed action
+              </div>
+              <h1 className="max-w-3xl font-display text-5xl leading-[0.98] tracking-[-0.01em] text-neutral-950 sm:text-7xl">
+                Wildfire signals are everywhere.
+                <span
+                  className="block bg-clip-text italic text-transparent"
+                  style={{ backgroundImage: 'linear-gradient(100deg, #c67438 0%, #9e4324 55%, #612c25 100%)' }}
+                >
+                  Clarity is not.
+                </span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
+                Twenty-six years of NASA fire detections over Indonesia, put on one scale. Artemis shows which months
+                are unusual, which places burn again and again, and what anyone can do about a hotspot today.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button onClick={onEnterConsole} className={primaryBtn}>
+                  Launch command center <ArrowRight className="h-4 w-4" />
+                </button>
+                <button onClick={() => onOpen('/audit')} className={secondaryBtn}>
+                  <ShieldCheck className="h-4 w-4" /> Enterprise EUDR audit
+                </button>
+              </div>
+              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-700">
+                <span>NASA FIRMS MODIS + VIIRS · 2000–2026</span>
+                <span>Harmonized burning calendar</span>
+                <button onClick={onOpenAbout} className="uppercase underline-offset-4 hover:text-neutral-950 hover:underline">How Artemis works</button>
+              </div>
             </div>
-            <h1 className="max-w-3xl font-mono text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-white sm:text-6xl">
-              Wildfire signals are everywhere.
-              <span className="block text-accent-300">Clarity is not.</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
-              Fire teams, researchers, and communities need more than isolated hotspot points.
-              Artemis turns satellite observations into a shared operational picture with local
-              weather, relevant reporting, and pathways to relief.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={onEnterConsole}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-accent-500 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] text-black shadow-[0_0_24px_rgba(249,136,15,0.2)] transition-colors hover:bg-accent-400"
-              >
-                Enter operational console
-                <ArrowRight className="h-4 w-4" />
-              </button>
-              <button
-                onClick={onOpenAbout}
-                className="inline-flex items-center justify-center rounded-md border border-white/[0.16] px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-white/65 transition-colors hover:border-white/30 hover:text-white"
-              >
-                How Artemis works
-              </button>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">
-              <span>NASA FIRMS observations</span>
-              <span>OpenWeatherMap context</span>
-              <span>Relief access</span>
-            </div>
-          </div>
 
-          <div className="relative rounded-2xl border border-white/[0.12] bg-[#0b0f12]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-7">
-            <div className="flex items-start justify-between border-b border-white/[0.1] pb-5">
-              <div>
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-accent-300">The operational gap</div>
-                <h2 className="mt-2 text-xl font-semibold text-white">From a point on a map to a decision</h2>
-              </div>
-              <Flame className="h-6 w-6 text-accent-300" />
-            </div>
-            <div className="space-y-5 pt-5">
-              <div className="flex gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-300/20 bg-red-300/10 font-mono text-xs text-red-200">01</div>
+            {/* The 3D moment: a dark window onto Earth, lit by today's real fire detections. */}
+            <div className="relative aspect-square w-full overflow-hidden rounded-[6px] bg-[#0b0908] shadow-[0_40px_90px_-30px_rgba(97,44,37,0.65)] ring-1 ring-black/40 lg:aspect-[1/1.02]">
+              <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 60%, rgba(198,116,56,0.22), transparent 70%)' }} />
+              <Suspense fallback={<div aria-hidden className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#2a1a14,#0b0908_70%)] shadow-[0_0_80px_rgba(230,148,48,0.35)]" />}>
+                <div className="absolute inset-0">
+                  <EarthHero tuning={earth} onCount={onCount} />
+                </div>
+              </Suspense>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 sm:p-5">
                 <div>
-                  <div className="font-semibold text-white/85">Detect</div>
-                  <p className="mt-1 text-sm leading-6 text-white/50">Satellite feeds identify heat signatures, but raw observations can be difficult to compare.</p>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">NASA FIRMS · today</div>
+                  <div className="mt-1 font-display text-2xl text-white sm:text-3xl">
+                    {liveCount === null ? 'Reading the sky…' : `${liveCount.toLocaleString()} fire detections`}
+                  </div>
+                </div>
+                <div className="hidden text-right font-mono text-[10px] uppercase leading-4 tracking-[0.12em] text-white/60 sm:block">
+                  Each light is a<br />real detection
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent-300/20 bg-accent-300/10 font-mono text-xs text-accent-200">02</div>
-                <div>
-                  <div className="font-semibold text-white/85">Understand</div>
-                  <p className="mt-1 text-sm leading-6 text-white/50">Weather, location, confidence, and FRP help teams prioritize what deserves attention.</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-300/20 bg-emerald-300/10 font-mono text-xs text-emerald-200">03</div>
-                <div>
-                  <div className="font-semibold text-white/85">Coordinate action</div>
-                  <p className="mt-1 text-sm leading-6 text-white/50">Connect monitoring with news and direct relief access for the people affected.</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex items-center gap-2 border-t border-white/[0.1] pt-5">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-200/70">Live workflow ready</span>
-              <span className="ml-auto font-mono text-[10px] text-white/30">03 connected steps</span>
             </div>
           </div>
         </section>
 
-        <section className="border-y border-white/[0.08] bg-white/[0.018]">
-          <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:py-16">
-            <div className="mb-7 flex items-end justify-between gap-5">
-              <div>
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-accent-300">What Artemis solves</div>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl">A connected picture for wildfire response</h2>
-              </div>
-              <MapPinned className="hidden h-7 w-7 text-white/25 sm:block" />
+        <TelemetryStrip />
+        <FeaturePreviews onOpen={onOpen} />
+
+        <section className="grain relative">
+          <div className="relative z-[2] mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:py-20">
+            <div className="mb-8">
+              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-700">What Artemis solves</div>
+              <h2 className="mt-2 font-display text-4xl leading-[1.05] text-neutral-950 sm:text-5xl">A connected picture for wildfire response</h2>
             </div>
-            <div className="grid gap-3 lg:grid-cols-[0.85fr_1.15fr]">
-              <div className="grid gap-px overflow-hidden rounded-xl border border-white/[0.1] bg-white/[0.1] sm:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+              <div className="grid gap-px overflow-hidden rounded-[6px] border border-neutral-900/15 bg-neutral-900/15 sm:grid-cols-2">
                 {solutionCards.map(({ icon: Icon, title }, index) => (
                   <button
                     key={title}
                     onClick={() => setActiveSolution(index)}
-                    className={`group min-h-32 bg-[#0b0f12] p-5 text-left transition-colors hover:bg-[#11171b] ${activeSolution === index ? 'bg-accent-400/[0.08] ring-1 ring-inset ring-accent-400/35' : ''}`}
                     aria-pressed={activeSolution === index}
+                    className={cn('group min-h-32 p-5 text-left transition-colors', activeSolution === index ? 'bg-white' : 'bg-karhutla-paper hover:bg-white/70')}
                   >
-                    <Icon className={`h-5 w-5 transition-colors ${activeSolution === index ? 'text-accent-200' : 'text-white/45 group-hover:text-accent-300'}`} />
-                    <h3 className="mt-5 font-semibold text-white/90">{title}</h3>
-                    <span className="mt-2 block font-mono text-[9px] uppercase tracking-[0.12em] text-white/30">
-                      {activeSolution === index ? 'Selected solution' : 'Explore solution'}
+                    <Icon className={cn('h-5 w-5', activeSolution === index ? 'text-neutral-950' : 'text-neutral-600 group-hover:text-neutral-900')} />
+                    <h3 className="mt-5 font-semibold text-neutral-900">{title}</h3>
+                    <span className="mt-2 block font-mono text-[9px] uppercase tracking-[0.12em] text-neutral-600">
+                      {activeSolution === index ? 'Selected' : 'Explore'}
                     </span>
                   </button>
                 ))}
               </div>
-              <div className="relative overflow-hidden rounded-xl border border-accent-400/20 bg-[#0b0f12] p-6 sm:p-8">
-                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-accent-500/10 blur-3xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-accent-300">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Why it matters
+              {/* Fluted glass over the thermal gradient. */}
+              <div className="thermal-gradient grain relative overflow-hidden rounded-[6px]">
+                <div className="fluted-glass relative z-[2] flex h-full flex-col justify-between p-6 sm:p-8">
+                  <div className="rounded-[4px] bg-karhutla-paper/85 p-5 backdrop-blur-sm sm:p-6">
+                    <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-700">Why it matters</div>
+                    <h3 key={selected.title} className="tab-panel-in mt-3 font-display text-3xl leading-tight text-neutral-950">{selected.title}</h3>
+                    <p key={`${selected.title}-d`} className="tab-panel-in mt-3 max-w-xl text-sm leading-7 text-neutral-800">{selected.description}</p>
                   </div>
-                  <h3 className="mt-4 text-2xl font-semibold text-white">{selectedSolution.title}</h3>
-                  <p className="mt-3 max-w-xl text-sm leading-7 text-white/55">{selectedSolution.description}</p>
-                  <div className="mt-7 grid gap-2 sm:grid-cols-3">
+                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
                     {['Observe', 'Contextualize', 'Respond'].map((step, index) => (
-                      <div key={step} className="rounded-lg border border-white/[0.1] bg-white/[0.025] p-3">
-                        <div className="font-mono text-[9px] text-accent-300">0{index + 1}</div>
-                        <div className="mt-2 text-xs font-medium text-white/75">{step}</div>
+                      <div key={step} className="rounded-[4px] bg-black/35 p-3 backdrop-blur-sm">
+                        <div className="font-mono text-[9px] text-white/75">0{index + 1}</div>
+                        <div className="mt-2 text-xs font-medium text-white">{step}</div>
                       </div>
                     ))}
                   </div>
-                  <button onClick={onEnterConsole} className="mt-7 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent-300 hover:text-accent-200">
-                    See it in the live console <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
                 </div>
               </div>
             </div>
           </div>
         </section>
+
+        {news && (
+          <section aria-labelledby="field-reporting" className="bg-karhutla-ink text-white">
+            <div className="mx-auto max-w-[1440px] px-5 py-14 sm:px-8">
+              <div className="mb-6">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">Field reporting</div>
+                <h2 id="field-reporting" className="mt-2 font-display text-4xl text-white">Wildfire news</h2>
+              </div>
+              {news}
+            </div>
+          </section>
+        )}
       </main>
 
-      <footer className="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/30">
-          Artemis · satellite fire intelligence for informed action
-        </p>
-        <button onClick={onEnterConsole} className="inline-flex items-center gap-2 self-start font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-300 hover:text-accent-200 sm:self-auto">
+      <footer className="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <img src={artemisWordmark} alt="Artemis" width={1200} height={326} className="h-6 w-auto opacity-80" />
+        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-700">NASA Space Apps 2026 · ITS Surabaya</p>
+        <button onClick={onEnterConsole} className="inline-flex items-center gap-2 self-start font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-900 underline-offset-4 hover:underline sm:self-auto">
           Open live console <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </footer>
+
+      {tuning && <TuningPanel earth={earth} onEarth={setEarth} />}
     </div>
   );
 }

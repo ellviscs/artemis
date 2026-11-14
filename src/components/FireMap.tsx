@@ -42,7 +42,7 @@ const LABELS_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labe
 const LAYER_COLORS = {
   modis: '#3b82f6',
   viirs: '#06b6d4',
-  harmonized: '#f9880f',
+  harmonized: '#d9831c',
 } as const;
 
 const MAX_LIVE_MAP_POINTS = 1000;
@@ -265,11 +265,11 @@ export function FireMap({
     const redraw = () => {
       draft.clearLayers();
       if (vertices.length > 1) {
-        L.polyline(vertices, { color: '#ffc75d', weight: 1.5, dashArray: '4 4', interactive: false }).addTo(draft);
+        L.polyline(vertices, { color: '#ecb067', weight: 1.5, dashArray: '4 4', interactive: false }).addTo(draft);
       }
       vertices.forEach((v, i) => {
         L.circleMarker(v, {
-          radius: i === 0 ? 5 : 3.5, color: '#ffc75d', weight: 1.5, fillColor: '#0b0b0b', fillOpacity: 1, interactive: false,
+          radius: i === 0 ? 5 : 3.5, color: '#ecb067', weight: 1.5, fillColor: '#0b0b0b', fillOpacity: 1, interactive: false,
         }).addTo(draft);
       });
     };
@@ -391,7 +391,7 @@ export function FireMap({
   }, [showModis, showViirs, showHarmonized]);
 
   return (
-    <div className="relative isolate h-[430px] w-full overflow-hidden rounded-[4px] border border-white/[0.08] bg-[#101210] shadow-[0_14px_45px_rgba(0,0,0,0.2)] sm:h-[540px]">
+    <div className="relative isolate h-[430px] w-full overflow-hidden rounded-[4px] border border-white/[0.08] bg-[#111111] shadow-[0_14px_45px_rgba(0,0,0,0.2)] sm:h-[540px]">
       <div ref={mapRef} className="absolute inset-0 z-0" />
       {children}
 
@@ -413,7 +413,7 @@ export function FireMap({
       )}
 
       <div className="pointer-events-none absolute left-3 top-3 z-[1000] sm:left-5 sm:top-5">
-        <div className="max-w-[calc(100vw-10rem)] rounded-[6px] border border-white/[0.1] bg-[#0b0d0b]/85 px-3 py-2.5 backdrop-blur-md sm:max-w-none sm:px-4 sm:py-3">
+        <div className="max-w-[calc(100vw-10rem)] rounded-[6px] border border-white/[0.1] bg-[#0e0e0e]/85 px-3 py-2.5 backdrop-blur-md sm:max-w-none sm:px-4 sm:py-3">
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#e7a356]">
             {statusLabel ? 'Archive activity map' : 'Live activity map'}
           </div>
@@ -432,7 +432,7 @@ export function FireMap({
       
       {/* Controls Overlay */}
       <div className="pointer-events-none absolute bottom-3 right-3 top-3 z-[1000] flex max-w-[calc(100%-1.5rem)] flex-col gap-2 sm:bottom-4 sm:right-4 sm:top-4">
-        <div className="pointer-events-auto flex max-h-full flex-col gap-3 overflow-y-auto rounded-xl border border-white/[0.1] bg-[#0b0d0b]/90 p-3 backdrop-blur-md sm:p-4">
+        <div className="pointer-events-auto flex max-h-full flex-col gap-3 overflow-y-auto rounded-xl border border-white/[0.1] bg-[#0e0e0e]/90 p-3 backdrop-blur-md sm:p-4">
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">Layers</h3>
             <button
@@ -441,7 +441,7 @@ export function FireMap({
               aria-expanded={showLayerInfo}
               aria-label="Explain fire map layers"
               className={cn(
-                'rounded-md p-1 text-white/35 transition-colors hover:bg-white/[0.07] hover:text-white/75',
+                'rounded-md p-1 text-white/55 transition-colors hover:bg-white/[0.07] hover:text-white/75',
                 showLayerInfo && 'bg-white/[0.07] text-[#f0a04a]',
               )}
             >
@@ -468,13 +468,13 @@ export function FireMap({
                   <p><strong className="font-medium text-orange-300">Harmonized</strong> · MODIS + VIIRS combined with overlapping detections reduced.</p>
                 </div>
               </div>
-              <p className="mt-3 text-white/35">
+              <p className="mt-3 text-white/55">
                 Use Harmonized for calendars, trends, anomalies, and early warnings.
               </p>
             </div>
           )}
           
-          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#f9880f]">
+          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showHarmonized && "border-white/20")}
               style={showHarmonized ? { backgroundColor: LAYER_COLORS.harmonized, borderColor: LAYER_COLORS.harmonized } : undefined}
@@ -483,7 +483,7 @@ export function FireMap({
             <input type="checkbox" className="sr-only" checked={showHarmonized} onChange={(e) => setShowHarmonized(e.target.checked)} />
           </label>
 
-          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#f9880f]">
+          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showModis && "border-white/20")}
               style={showModis ? { backgroundColor: LAYER_COLORS.modis, borderColor: LAYER_COLORS.modis } : undefined}
@@ -492,7 +492,7 @@ export function FireMap({
             <input type="checkbox" className="sr-only" checked={showModis} onChange={(e) => setShowModis(e.target.checked)} />
           </label>
 
-          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#f9880f]">
+          <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showViirs && "border-white/20")}
               style={showViirs ? { backgroundColor: LAYER_COLORS.viirs, borderColor: LAYER_COLORS.viirs } : undefined}
@@ -504,7 +504,7 @@ export function FireMap({
 
         <button
           onClick={onToggleAllRegions}
-          className="pointer-events-auto rounded-xl border border-white/[0.1] bg-[#0b0d0b]/90 px-4 py-2.5 text-xs font-medium text-white/65 backdrop-blur-md transition-colors hover:text-white"
+          className="pointer-events-auto rounded-xl border border-white/[0.1] bg-[#0e0e0e]/90 px-4 py-2.5 text-xs font-medium text-white/65 backdrop-blur-md transition-colors hover:text-white"
         >
           {showAllRegions ? 'Hide Regions' : 'Show Regions'}
         </button>

@@ -210,7 +210,7 @@ export function ControlBar() {
   return (
     <section
       aria-label="Dashboard filters"
-      className="relative z-30 border-b border-white/[0.1] bg-[#080b0e]/95 backdrop-blur-xl lg:sticky lg:top-[65px]"
+      className="relative z-30 border-b border-white/[0.1] bg-[#0c0c0c]/95 backdrop-blur-xl lg:sticky lg:top-[65px]"
     >
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-end gap-x-6 gap-y-3 px-3 py-3 sm:px-6">
         <Group label="Area of interest" htmlFor={`${ids}-region`} className="min-w-[16rem] flex-1">
@@ -286,7 +286,7 @@ export function ControlBar() {
             aria-label="Mask static industrial and volcanic heat sources"
             checked={maskStatic}
             onChange={(e) => setFilters({ maskStatic: e.target.checked })}
-            className="h-3.5 w-3.5 accent-[#f9880f]"
+            className="h-3.5 w-3.5 accent-[#d9831c]"
           />
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/70">
             Mask static industrial &amp; volcanic heat

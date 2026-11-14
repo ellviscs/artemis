@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import artemisLogo from '@/logo/Artemis.jpg';
+import artemisLogo from '@/logo/artemis-wordmark-light.png';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -67,18 +67,16 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
         <button
           onClick={onClose}
           aria-label="Close about Artemis"
-          className="absolute right-4 top-4 z-10 rounded-lg border border-white/[0.08] bg-black/20 p-2 text-white/40 transition-colors hover:bg-white/[0.08] hover:text-white"
+          className="absolute right-4 top-4 z-10 rounded-lg border border-white/[0.08] bg-black/20 p-2 text-white/55 transition-colors hover:bg-white/[0.08] hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>
 
-        <div className="relative overflow-hidden border-b border-white/[0.08] bg-[radial-gradient(circle_at_15%_10%,rgba(240,138,36,0.2),transparent_36%),linear-gradient(135deg,#151a1d,#0b0d0f)] p-6 sm:p-8">
+        <div className="relative overflow-hidden border-b border-white/[0.08] bg-[radial-gradient(circle_at_15%_10%,rgba(217,131,28,0.22),transparent_40%),linear-gradient(135deg,#161616,#0c0c0c)] p-6 sm:p-8">
           <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full border border-amber-300/10" />
           <div className="absolute -right-8 -top-12 h-32 w-32 rounded-full border border-amber-300/10" />
           <div className="relative flex items-start gap-4 pr-8">
-            <div className="h-14 w-28 shrink-0 overflow-hidden rounded-xl border border-white/[0.15] bg-black shadow-[0_0_28px_rgba(240,138,36,0.18)] sm:h-16 sm:w-36">
-              <img src={artemisLogo} alt="Artemis" className="h-full w-full object-cover object-[center_48%]" />
-            </div>
+            <img src={artemisLogo} alt="Artemis" width={1200} height={326} className="mt-1 h-9 w-auto shrink-0 sm:h-11" />
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/[0.07] px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-emerald-200/80">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.8)]" />
@@ -131,8 +129,8 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-              <Users className="h-4 w-4 text-white/35" />
-              <div><div className="text-[10px] uppercase tracking-wider text-white/30">Built by</div><div className="text-xs font-medium text-white/70">ITS Surabaya</div></div>
+              <Users className="h-4 w-4 text-white/55" />
+              <div><div className="text-[10px] uppercase tracking-wider text-white/55">Built by</div><div className="text-xs font-medium text-white/70">ITS Surabaya</div></div>
             </div>
             <a
               href="https://www.spaceappschallenge.org/"
@@ -160,7 +158,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white/85">Contributors</h3>
-              <span className="font-mono text-[9px] uppercase tracking-wider text-white/30">Indonesia</span>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-white/55">Indonesia</span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {[
@@ -174,7 +172,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                 <div key={handle} className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2.5">
                   <div className="text-xs font-medium text-white/75">{name}</div>
                   <div className="mt-0.5 flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10px] text-white/35">{handle}</span>
+                    <span className="font-mono text-[10px] text-white/55">{handle}</span>
                     <span className="text-[9px] uppercase tracking-wider text-amber-200/55">{role}</span>
                   </div>
                 </div>
@@ -184,8 +182,8 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] pt-4">
             <div>
-              <p className="text-[10px] leading-4 text-white/30">Stack: React · TypeScript · Vite · Tailwind · Leaflet · FastAPI · Python</p>
-              <p className="mt-1 text-[10px] leading-4 text-white/25">Data: NASA FIRMS · OpenWeatherMap · NewsData.io · Nominatim · Every.org</p>
+              <p className="text-[10px] leading-4 text-white/55">Stack: React · TypeScript · Vite · Tailwind · Leaflet · FastAPI · Python</p>
+              <p className="mt-1 text-[10px] leading-4 text-white/55">Data: NASA FIRMS · OpenWeatherMap · NewsData.io · Nominatim · Every.org</p>
             </div>
             <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-amber-200/70 transition-colors hover:text-amber-100">
               NASA FIRMS <ArrowUpRight className="h-3 w-3" />

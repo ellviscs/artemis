@@ -208,10 +208,10 @@ export function ArchiveMapLayers({
     for (const f of footprints) {
       L.polygon(ellipse(f.lat, f.lng, f.scan, f.track), {
         pane: 'ellipsePane',
-        color: '#ffc75d',
+        color: '#ecb067',
         weight: 1,
         opacity: 0.9,
-        fillColor: '#ffc75d',
+        fillColor: '#ecb067',
         fillOpacity: 0.08,
       })
         .bindTooltip(`${f.label}<br/>FRP ${f.frp.toFixed(1)} MW · pixel ≈ ${f.scan.toFixed(2)} × ${f.track.toFixed(2)} km`, { sticky: true, className: 'custom-popup' })
@@ -256,7 +256,7 @@ export function ArchiveMapLayers({
   return (
     <div className="pointer-events-none absolute left-3 top-[5rem] z-[1000] flex max-w-[calc(100%-1.5rem)] flex-col gap-2 sm:left-5 sm:top-[5.75rem]">
       {focus && (
-        <div className="pointer-events-auto w-64 rounded-[6px] border border-white/[0.1] bg-[#0b0d0b]/90 p-3 backdrop-blur-md">
+        <div className="pointer-events-auto w-64 rounded-[6px] border border-white/[0.1] bg-[#0e0e0e]/90 p-3 backdrop-blur-md">
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
               {MONTH_LABELS[focus.month - 1]} {focus.year} · ~5 km² hexes
@@ -296,12 +296,12 @@ export function ArchiveMapLayers({
           aria-pressed={showStatic}
           className={cn(
             'rounded-[4px] border px-2 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] backdrop-blur-md transition-colors',
-            showStatic ? 'border-white/40 bg-white/[0.12] text-white' : 'border-white/[0.14] bg-[#0b0d0b]/85 text-white/60 hover:text-white',
+            showStatic ? 'border-white/40 bg-white/[0.12] text-white' : 'border-white/[0.14] bg-[#0e0e0e]/85 text-white/60 hover:text-white',
           )}
         >
           Masked heat sources
         </button>
-        <span className="flex items-center gap-1 rounded-[4px] border border-white/[0.1] bg-[#0b0d0b]/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-white/50 backdrop-blur-md">
+        <span className="flex items-center gap-1 rounded-[4px] border border-white/[0.1] bg-[#0e0e0e]/85 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-white/50 backdrop-blur-md">
           <ScanLine className="h-3 w-3" />
           {zoomedIn ? `${footprints.length.toLocaleString('en-US')} pixel footprints` : 'Zoom in for pixel footprints'}
         </span>
