@@ -24,8 +24,6 @@ colors:
   status-watch: "#fcd34d"
   status-warning: "#fdba74"
   status-extreme: "#fca5a5"
-  sensor-modis: "#3b82f6"
-  sensor-viirs: "#06b6d4"
 typography:
   display:
     fontFamily: "Syncopate, Inter, system-ui, sans-serif"
@@ -162,6 +160,8 @@ A blackout palette with a single signal color; everything else is status, sensor
 **The One Signal Rule.** Signal Orange covers no more than ~10% of any screen. If two things on the same screen are both orange, one of them is wrong.
 
 **The Safe Ramp Rule.** Anything that encodes quantity (calendar heatmap, hexagon grid, anomaly scale) uses a colorblind-safe ramp (Viridis, Cividis or YlOrRd), labeled "Colorblind-safe" in the UI. The legacy `flame` scale in `tailwind.config.js` is not colorblind-safe and must not be used for data.
+
+**Live detection dots.** Colour = fire radiative power on the selected ramp (log scale, fixed 1–500 MW domain, `src/lib/frpStyle.ts`); shape = sensor (VIIRS filled dot with a dark outline, MODIS ring). Dots stay small (radius 2.5–5) so the archive hexagons read between them, hottest drawn last. No per-sensor hues and no flat orange for detections.
 
 **The Never-Color-Alone Rule.** Every status color ships with a text label (CLEAR, WATCH, …) and, where space allows, an icon.
 

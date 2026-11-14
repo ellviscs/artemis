@@ -9,7 +9,8 @@ import { fetchCurrentWeather, type CurrentWeather } from '@/data/weatherApi';
 import { WeatherInfoCard } from '@/components/WeatherInfoCard';
 import { reverseGeocode } from '@/data/locationApi';
 import { aoiContains, type Aoi, type LatLng } from '@/lib/aoi';
-import type { DrawMode } from '@/state/filters';
+import { useFilters, type DrawMode } from '@/state/filters';
+import { FRP_TICKS, frpColor, frpGradient, frpT } from '@/lib/frpStyle';
 
 interface FireMapProps {
   region: Region;
@@ -39,13 +40,8 @@ const CARTO_QUERY = CARTO_API_KEY ? `?key=${CARTO_API_KEY}` : '';
 const BASE_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png${CARTO_QUERY}`;
 const LABELS_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}.png${CARTO_QUERY}`;
 
-const LAYER_COLORS = {
-  modis: '#3b82f6',
-  viirs: '#06b6d4',
-  harmonized: '#d9831c',
-} as const;
-
 const MAX_LIVE_MAP_POINTS = 1000;
+
 
 export function FireMap({
   region,
@@ -89,6 +85,7 @@ export function FireMap({
   const [showViirs, setShowViirs] = useState(false);
   const [showHarmonized, setShowHarmonized] = useState(true);
   const [showLayerInfo, setShowLayerInfo] = useState(false);
+  const { ramp } = useFilters();
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
@@ -170,6 +167,7 @@ export function FireMap({
     const filterLive = (points: FireHotspot[]) => isLiveDate
       ? points.filter((point) => aoiContains(aoi, point.lat, point.lng))
         .sort((a, b) => b.frp - a.frp).slice(0, MAX_LIVE_MAP_POINTS)
+        .reverse() // draw the hottest last, on top
       : [];
     // Only real FIRMS observations are drawn. Historical dates render nothing
     // until the processed archive layer (Sprint 2) is available.
@@ -181,7 +179,7 @@ export function FireMap({
 
     const createPopup = (point: FireHotspot, color: string) => `
       <div style="background-color: #0f0f0f; border: 1px solid rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; color: #fff; font-family: Inter, sans-serif; min-width: 200px;">
-        <div style="font-weight: 600; margin-bottom: 8px; color: ${color}; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em;">${point.source}${point.satellite ? ` · ${point.satellite}` : ''} Detection</div>
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 8px; color: #e5e5e5; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em;"><span style="width: 8px; height: 8px; border-radius: 9999px; background: ${color}; flex-shrink: 0;"></span>${point.source}${point.satellite ? ` · ${point.satellite}` : ''} Detection</div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
           <span style="color: #888;">FRP</span>
           <span style="font-family: 'JetBrains Mono', monospace;">${point.frp.toFixed(1)} MW</span>
@@ -200,21 +198,18 @@ export function FireMap({
     const addMarkers = (
       data: FireHotspot[],
       group: L.FeatureGroup,
-      color: string,
       pane: string,
-      radius: number,
+      scaleBump: number,
     ) => {
       data.forEach(point => {
-        const marker = L.circleMarker([point.lat, point.lng], {
-          radius,
-          fillColor: color,
-          color: color,
-          weight: 1.5,
-          opacity: 1,
-          fillOpacity: 0.78,
-          pane,
-        });
-        
+        // Colour = FRP on the selected ramp; shape = sensor (VIIRS filled, MODIS ring).
+        // Small dots (2.5–4.5 px, + scale bump per layer) keep the archive hexes visible.
+        const color = frpColor(ramp, point.frp);
+        const r = 2.5 + 2 * frpT(point.frp) + scaleBump;
+        const marker = L.circleMarker([point.lat, point.lng], point.source === 'MODIS'
+          ? { radius: r + 0.5, fillColor: '#050505', fillOpacity: 0.55, color, weight: 1.75, opacity: 1, pane }
+          : { radius: r, fillColor: color, fillOpacity: 0.95, color: '#050505', weight: 1, opacity: 0.9, pane });
+
         marker.bindPopup(createPopup(point, color), {
           className: 'custom-popup',
           closeButton: false,
@@ -231,11 +226,11 @@ export function FireMap({
       });
     };
 
-    addMarkers(hotspots.modis, modis, LAYER_COLORS.modis, 'modisPane', 3.5);
-    addMarkers(hotspots.viirs, viirs, LAYER_COLORS.viirs, 'viirsPane', 3.5);
-    addMarkers(hotspots.harmonized, harmonized, LAYER_COLORS.harmonized, 'harmonizedPane', 5);
+    addMarkers(hotspots.modis, modis, 'modisPane', 0);
+    addMarkers(hotspots.viirs, viirs, 'viirsPane', 0);
+    addMarkers(hotspots.harmonized, harmonized, 'harmonizedPane', 0.5);
 
-  }, [aoi, selectedDate, liveDate, liveModisHotspots, liveViirsHotspots, liveHarmonizedHotspots, onLocationChange, onInspect]);
+  }, [aoi, selectedDate, liveDate, liveModisHotspots, liveViirsHotspots, liveHarmonizedHotspots, onLocationChange, onInspect, ramp]);
 
   // Outline the active area of interest (neutral stroke; orange is reserved for signal).
   useEffect(() => {
@@ -456,16 +451,16 @@ export function FireMap({
               </p>
               <div className="mt-3 space-y-2">
                 <div className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: LAYER_COLORS.modis }} />
-                  <p><strong className="font-medium text-blue-300">MODIS Raw</strong> · longer historical record, 1 km resolution.</p>
+                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full border-[1.5px] border-white/80 bg-black/60" />
+                  <p><strong className="font-medium text-white/85">MODIS Raw</strong> · rings · longer historical record, 1 km resolution.</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: LAYER_COLORS.viirs }} />
-                  <p><strong className="font-medium text-cyan-300">VIIRS Raw</strong> · finer detail, 375 m resolution, detects smaller fires.</p>
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full border border-black bg-white/80" />
+                  <p><strong className="font-medium text-white/85">VIIRS Raw</strong> · filled dots · finer detail, 375 m resolution, detects smaller fires.</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: LAYER_COLORS.harmonized }} />
-                  <p><strong className="font-medium text-orange-300">Harmonized</strong> · MODIS + VIIRS combined with overlapping detections reduced.</p>
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ background: frpGradient(ramp) }} />
+                  <p><strong className="font-medium text-white/85">Harmonized</strong> · MODIS + VIIRS combined with overlapping detections reduced.</p>
                 </div>
               </div>
               <p className="mt-3 text-white/55">
@@ -474,10 +469,25 @@ export function FireMap({
             </div>
           )}
           
+            <div className="border-b border-white/[0.08] pb-3">
+              <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/55">Fire intensity · FRP</div>
+              <div className="mt-1.5 h-2 w-40 rounded-[2px]" style={{ background: frpGradient(ramp) }} />
+              <div className="relative mt-1 h-3 w-40 font-mono text-[9px] tabular-nums text-white/55">
+                {FRP_TICKS.map((v) => (
+                  <span key={v} className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full" style={{ left: `${frpT(v) * 100}%` }}>{v}</span>
+                ))}
+              </div>
+              <div className="mt-1 font-mono text-[9px] text-white/55">MW · log scale</div>
+              <div className="mt-2 flex gap-3 text-[11px] text-white/65">
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full border border-black bg-white/85" /> VIIRS</span>
+                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-[1.5px] border-white/85 bg-black/60" /> MODIS</span>
+              </div>
+            </div>
+
           <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showHarmonized && "border-white/20")}
-              style={showHarmonized ? { backgroundColor: LAYER_COLORS.harmonized, borderColor: LAYER_COLORS.harmonized } : undefined}
+              style={showHarmonized ? { background: frpGradient(ramp), borderColor: 'rgba(255,255,255,0.5)' } : undefined}
             />
             <span className={cn("text-sm", showHarmonized ? "text-white" : "text-white/50 group-hover:text-white/70")}>Harmonized</span>
             <input type="checkbox" className="sr-only" checked={showHarmonized} onChange={(e) => setShowHarmonized(e.target.checked)} />
@@ -486,7 +496,7 @@ export function FireMap({
           <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showModis && "border-white/20")}
-              style={showModis ? { backgroundColor: LAYER_COLORS.modis, borderColor: LAYER_COLORS.modis } : undefined}
+              style={showModis ? { background: frpGradient(ramp), borderColor: 'rgba(255,255,255,0.5)' } : undefined}
             />
             <span className={cn("text-sm", showModis ? "text-white" : "text-white/50 group-hover:text-white/70")}>MODIS Raw</span>
             <input type="checkbox" className="sr-only" checked={showModis} onChange={(e) => setShowModis(e.target.checked)} />
@@ -495,7 +505,7 @@ export function FireMap({
           <label className="group flex cursor-pointer items-center gap-3 rounded-[4px] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d9831c]">
             <div
               className={cn("w-3 h-3 rounded-full border", !showViirs && "border-white/20")}
-              style={showViirs ? { backgroundColor: LAYER_COLORS.viirs, borderColor: LAYER_COLORS.viirs } : undefined}
+              style={showViirs ? { background: frpGradient(ramp), borderColor: 'rgba(255,255,255,0.5)' } : undefined}
             />
             <span className={cn("text-sm", showViirs ? "text-white" : "text-white/50 group-hover:text-white/70")}>VIIRS Raw</span>
             <input type="checkbox" className="sr-only" checked={showViirs} onChange={(e) => setShowViirs(e.target.checked)} />
