@@ -10,14 +10,13 @@ import {
   type LiveFireData,
 } from '@/data/firmsApi';
 import type { FireHotspot } from '@/types';
-import { aoiContains, aoiToRegion, type Aoi } from '@/lib/aoi';
+import { aoiContains, aoiToRegion, archiveCell, type Aoi } from '@/lib/aoi';
 import { FiltersProvider, useFilters } from '@/state/filters';
 import { ControlBar } from '@/components/ControlBar';
 import { BurningCalendar } from '@/components/BurningCalendar';
 
 import { ArchiveMapLayers } from '@/components/ArchiveMapLayers';
 import { HotspotInspector, type InspectTarget } from '@/components/HotspotInspector';
-import { latLngToCell } from 'h3-js';
 import { MONTH_LABELS } from '@/data/historyApi';
 import { currentYearMonth, ymKey } from '@/state/yearMonth';
 import { LiveEarlyWarningPanel } from '@/components/LiveEarlyWarningPanel';
@@ -25,7 +24,9 @@ import { FireMap } from '@/components/FireMap';
 import { AboutModal } from '@/components/AboutModal';
 import { NewsSlider } from '@/components/NewsSlider';
 import { fetchDisasterNews, type DisasterNewsArticle } from '@/data/newsDataApi';
-import { DonationWidget } from '@/components/DonationWidget';
+import { ImpactHub } from '@/components/impact/ImpactHub';
+import { HazeConeLayer } from '@/components/impact/HazeConeLayer';
+import type { HazeConeGeometry } from '@/lib/hazeCone';
 import type { Map as LeafletMap } from 'leaflet';
 
 export function DashboardPage() {
@@ -47,7 +48,7 @@ function Dashboard() {
   const [disasterReports, setDisasterReports] = useState<DisasterNewsArticle[]>([]);
   const [disasterError, setDisasterError] = useState<string | null>(null);
   const [isDisasterLoading, setIsDisasterLoading] = useState(true);
-  const [currentLocation, setCurrentLocation] = useState('Indonesia');
+  const [, setCurrentLocation] = useState('Indonesia');
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
   useEffect(() => {
@@ -94,15 +95,24 @@ function Dashboard() {
   const handleAoiDrawn = useCallback((next: Aoi) => setFilters({ aoi: next }), [setFilters]);
   const [inspect, setInspect] = useState<InspectTarget | null>(null);
   const inspectLive = useCallback((h: FireHotspot) => {
-    setInspect({ lat: h.lat, lng: h.lng, cell: latLngToCell(h.lat, h.lng, 7), live: h });
+    setInspect({ lat: h.lat, lng: h.lng, cell: archiveCell(h.lat, h.lng), live: h });
   }, []);
   const closeInspector = useCallback(() => setInspect(null), []);
+  const [impactTarget, setImpactTarget] = useState<InspectTarget | null>(null);
+  const [hazeCone, setHazeCone] = useState<HazeConeGeometry | null>(null);
+  const closeImpact = useCallback(() => setImpactTarget(null), []);
+  const showCone = useCallback((cone: HazeConeGeometry) => {
+    setHazeCone(cone);
+    setImpactTarget(null);
+    setInspect(null);
+  }, []);
 
   const handleMapReady = useCallback((map: LeafletMap) => {
     setMapInstance(map);
   }, []);
 
   const handleViewDonationLocation = useCallback((latitude: number, longitude: number, zoom: number) => {
+    setImpactTarget(null);
     mapInstance?.flyTo([latitude, longitude], zoom, { duration: 1.5 });
   }, [mapInstance]);
 
@@ -263,6 +273,7 @@ function Dashboard() {
               onInspect={inspectLive}
             >
               <ArchiveMapLayers map={mapInstance} liveHotspots={archiveFocus ? [] : liveInAoi} onInspect={setInspect} />
+              {hazeCone && <HazeConeLayer map={mapInstance} cone={hazeCone} onClear={() => setHazeCone(null)} />}
             </FireMap>
           </div>
           <aside className="space-y-3">
@@ -305,14 +316,14 @@ function Dashboard() {
         </div>
 
 
-        <section className="mt-3 grid gap-3 lg:grid-cols-2">
+        {/* Donations now live in the Impact Hub (Branch 1), opened from any hotspot. */}
+        <section className="mt-3">
           <NewsSlider
             articles={disasterReports}
             isLoading={isDisasterLoading}
             error={disasterError}
             onRetry={loadDisasterReports}
           />
-          <DonationWidget currentLocation={currentLocation} onViewLocation={handleViewDonationLocation} />
         </section>
 
         {/* Footer */}
@@ -346,6 +357,17 @@ function Dashboard() {
           onClose={closeInspector}
           todayHotspots={liveInAoi}
           previousDayHotspots={liveData?.previousDayHotspots ?? []}
+          onOpenImpact={() => setImpactTarget(inspect)}
+        />
+      )}
+      {impactTarget && (
+        <ImpactHub
+          variant="modal"
+          target={impactTarget}
+          liveHotspots={(liveData?.viirsHotspots ?? []).concat(liveData?.modisHotspots ?? [])}
+          onClose={closeImpact}
+          onShowCone={showCone}
+          onViewLocation={handleViewDonationLocation}
         />
       )}
       <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />

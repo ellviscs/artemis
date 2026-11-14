@@ -22,6 +22,8 @@ interface Props {
   onClose: () => void;
   todayHotspots: FireHotspot[];
   previousDayHotspots: FireHotspot[];
+  /** Opens the Impact Hub for this target; falls back to the /impact route. */
+  onOpenImpact?: () => void;
 }
 
 const PERSISTENCE_RADIUS_KM = 10;
@@ -84,7 +86,7 @@ function HistoryBars({ f }: { f: ForensicCell }) {
   );
 }
 
-export function HotspotInspector({ target, onClose, todayHotspots, previousDayHotspots }: Props) {
+export function HotspotInspector({ target, onClose, todayHotspots, previousDayHotspots, onOpenImpact }: Props) {
   const navigate = useNavigate();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [place, setPlace] = useState<string | null>(null);
@@ -299,11 +301,10 @@ export function HotspotInspector({ target, onClose, todayHotspots, previousDayHo
       <footer className="grid grid-cols-2 gap-2 border-t border-white/[0.1] px-4 py-3">
         <button
           type="button"
-          disabled
-          title="The Impact Hub arrives in the next build"
-          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-white/[0.14] px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55 disabled:cursor-not-allowed"
+          onClick={() => (onOpenImpact ? onOpenImpact() : navigate(`/impact?lat=${target.lat.toFixed(4)}&lng=${target.lng.toFixed(4)}`))}
+          className="flex items-center justify-center gap-1.5 rounded-[6px] border border-accent-400/50 px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-200 hover:bg-accent-400/10"
         >
-          <HandHeart className="h-3.5 w-3.5" /> Impact hub · soon
+          <HandHeart className="h-3.5 w-3.5" /> Open impact hub
         </button>
         <button
           type="button"

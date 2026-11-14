@@ -89,6 +89,35 @@ export async function handleWeather(params: URLSearchParams, env: Env): Promise<
   };
 }
 
+// NORAD catalog numbers of the live VIIRS platforms.
+const TLE_SATELLITES: Record<string, string> = { '43013': 'NOAA-20', '54234': 'NOAA-21' };
+const TLE_TTL_MS = 6 * 60 * 60 * 1000;
+const tleCache = new Map<string, { at: number; body: string }>();
+
+/**
+ * GET /api/tle?catnr=43013
+ * Two-line orbital elements from CelesTrak. CelesTrak asks clients not to refetch
+ * the same element set more than every two hours, so responses are cached for 6 h.
+ */
+export async function handleTle(params: URLSearchParams): Promise<ProxyResult> {
+  const catnr = params.get('catnr') ?? '';
+  if (!TLE_SATELLITES[catnr]) return text(400, 'catnr must be 43013 (NOAA-20) or 54234 (NOAA-21).');
+
+  const hit = tleCache.get(catnr);
+  if (hit && Date.now() - hit.at < TLE_TTL_MS) {
+    return { status: 200, body: hit.body, contentType: 'text/plain; charset=utf-8', cacheSeconds: 21600 };
+  }
+  const response = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${catnr}&FORMAT=TLE`);
+  const body = await response.text();
+  const valid = response.ok && /^1 /m.test(body) && /^2 /m.test(body);
+  if (!valid) {
+    if (hit) return { status: 200, body: hit.body, contentType: 'text/plain; charset=utf-8' };
+    return text(502, `CelesTrak returned no element set (${response.status}).`);
+  }
+  tleCache.set(catnr, { at: Date.now(), body });
+  return { status: 200, body, contentType: 'text/plain; charset=utf-8', cacheSeconds: 21600 };
+}
+
 export function toResponse(result: ProxyResult): Response {
   const headers: Record<string, string> = { 'Content-Type': result.contentType };
   if (result.cacheSeconds) {

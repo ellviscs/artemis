@@ -146,7 +146,9 @@ export async function fetchGlobalNonprofits(
       description: typeof item.description === 'string' && item.description
         ? item.description
         : `Support wildfire relief and humanitarian work related to ${locationKeyword}.`,
-      regionTags: [locationKeyword, 'Global'],
+      // Every.org search is keyword-based, so results are not tied to this location.
+      regionTags: ['Global'],
+      source: 'every.org' as const,
       donationUrl: `https://www.every.org/${identifier}/donate`,
       latitude: 0,
       longitude: 0,

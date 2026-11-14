@@ -172,7 +172,8 @@ export function fetchArchiveHotspots(regionId: string, year: number): Promise<Ar
     if (response.status === 404) return [];
     if (!response.ok) throw new Error(`Hotspot archive for ${regionId} ${year} is unavailable (${response.status}).`);
     const text = await gunzipText(response);
-    const lines = text.trim().split(/\r?\n/);
+    // Tolerate any CR/LF mix (older exports ended lines with "\r\r\n").
+    const lines = text.trim().split(/\r*\n/);
     const header = lines[0]?.split(',') ?? [];
     const at = (name: string) => header.indexOf(name);
     const idx = {

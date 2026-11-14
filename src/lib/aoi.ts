@@ -1,6 +1,16 @@
 // Area-of-interest geometry: preset region, point + radius, or drawn polygon.
+import { cellToParent, latLngToCell } from 'h3-js';
 import { getRegionById } from '@/data/regions';
 import type { Region } from '@/types';
+
+/**
+ * Archive cell for a point, matching pipeline/harmonize.py: the res-7 parent of the
+ * res-8 cell. H3 cells do not nest exactly, so near edges this differs from
+ * latLngToCell(lat, lng, 7), and forensic / hex records are keyed by this one.
+ */
+export function archiveCell(lat: number, lng: number): string {
+  return cellToParent(latLngToCell(lat, lng, 8), 7);
+}
 
 export type LatLng = [number, number];
 

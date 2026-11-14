@@ -2,7 +2,7 @@ import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { setDefaultResultOrder } from 'node:dns';
-import { handleFirms, handleWeather, type ProxyResult } from './server/handlers';
+import { handleFirms, handleTle, handleWeather, type ProxyResult } from './server/handlers';
 
 setDefaultResultOrder('ipv4first');
 
@@ -14,6 +14,7 @@ function apiDevServer(env: Record<string, string>): Plugin {
   const routes: Record<string, (params: URLSearchParams, env: Record<string, string>) => Promise<ProxyResult>> = {
     '/api/firms': handleFirms,
     '/api/weather': handleWeather,
+    '/api/tle': (params) => handleTle(params),
   };
 
   const middleware: Connect.NextHandleFunction = async (req, res, next) => {

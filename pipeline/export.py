@@ -149,13 +149,17 @@ def export_points(points: pd.DataFrame) -> dict:
         for year, part in sub.groupby("year"):
             out = part[cols].sort_values(["date", "time"]).copy()
             out["date"] = out["date"].dt.strftime("%Y-%m-%d")
-            out["lat"] = out["lat"].round(4)
-            out["lon"] = out["lon"].round(4)
+            # Fixed 4 decimals (~11 m) as text: the "%.4g" float format below would cut
+            # coordinates to 4 significant digits (112.66777 -> 112.7, ~5 km off).
+            out["lat"] = out["lat"].map("{:.4f}".format)
+            out["lon"] = out["lon"].map("{:.4f}".format)
             out["static"] = out["static"].astype(int)
             path = OUT / "points" / region / f"{int(year)}.csv.gz"
             path.parent.mkdir(parents=True, exist_ok=True)
-            with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as f:
-                out.to_csv(f, index=False, float_format="%.4g")
+            # newline="" + "\n" terminator: on Windows both pandas and text mode would
+            # otherwise add "\r", giving "\r\r\n" line ends.
+            with gzip.open(path, "wt", encoding="utf-8", compresslevel=9, newline="") as f:
+                out.to_csv(f, index=False, float_format="%.4g", lineterminator="\n")
             total += path.stat().st_size
         sizes[region] = total
     return sizes

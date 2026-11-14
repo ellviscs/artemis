@@ -7,7 +7,9 @@ interface WeatherInfoCardProps {
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
-  onClose: () => void;
+  /** Omit when embedded (e.g. Impact Hub) to hide the close button. */
+  onClose?: () => void;
+  embedded?: boolean;
 }
 
 export function WeatherInfoCard({
@@ -17,6 +19,7 @@ export function WeatherInfoCard({
   error,
   onRetry,
   onClose,
+  embedded = false,
 }: WeatherInfoCardProps) {
   const highFireSpreadRisk = weather !== null
     && weather.windSpeedMetersPerSecond >= 8
@@ -25,26 +28,30 @@ export function WeatherInfoCard({
   return (
     <section
       aria-live="polite"
-      className="pointer-events-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-xl border border-white/[0.12] bg-[#0b0d0b]/95 p-4 text-white shadow-2xl backdrop-blur-md"
+      className={embedded
+        ? 'rounded-[4px] border border-white/[0.12] bg-[#111111] p-4 text-white'
+        : 'pointer-events-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-xl border border-white/[0.12] bg-[#0b0d0b]/95 p-4 text-white shadow-2xl backdrop-blur-md'}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <Cloud className="h-4 w-4 text-sky-300" />
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-white/80">Current weather</h3>
-            <p className="mt-1 font-mono text-[10px] text-white/40">
+            <p className="mt-1 font-mono text-[10px] text-white/55">
               {weather?.locationName ?? `${coordinates.lat.toFixed(3)}, ${coordinates.lng.toFixed(3)}`}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close weather information"
-          className="rounded-md p-1 text-white/40 transition-colors hover:bg-white/[0.08] hover:text-white"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close weather information"
+            className="rounded-md p-1 text-white/55 transition-colors hover:bg-white/[0.08] hover:text-white"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {isLoading && (
@@ -76,14 +83,14 @@ export function WeatherInfoCard({
             <Metric icon={<Wind className="h-3.5 w-3.5" />} label="Wind speed" value={`${weather.windSpeedMetersPerSecond.toFixed(1)} m/s`} />
             <Metric icon={<Wind className="h-3.5 w-3.5" />} label="Wind direction" value={`${weather.windDirectionLabel} · ${Math.round(weather.windDirectionDegrees)}°`} />
           </div>
-          <p className="mt-3 text-[11px] capitalize text-white/45">{weather.condition}</p>
+          <p className="mt-3 text-[11px] capitalize text-white/60">{weather.condition}</p>
           {highFireSpreadRisk && (
             <div className="mt-3 flex items-center gap-2 rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-2 text-[11px] font-semibold text-orange-200">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
               High Fire Spread Risk
             </div>
           )}
-          <p className="mt-3 font-mono text-[9px] text-white/25">
+          <p className="mt-3 font-mono text-[9px] text-white/55">
             OpenWeatherMap · updated {new Date(weather.observedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </p>
         </>
@@ -95,7 +102,7 @@ export function WeatherInfoCard({
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-2.5">
-      <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+      <div className="flex items-center gap-1.5 text-[10px] text-white/55">
         {icon}
         {label}
       </div>

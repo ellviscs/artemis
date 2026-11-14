@@ -5,7 +5,7 @@ import type { DonationCampaign } from '@/data/donationApi';
 interface DonationCardProps {
   campaign: DonationCampaign;
   currentLocation: string;
-  onViewMap: (campaign: DonationCampaign) => Promise<void>;
+  onViewMap?: (campaign: DonationCampaign) => Promise<void>;
 }
 
 export function DonationCard({ campaign, currentLocation, onViewMap }: DonationCardProps) {
@@ -13,6 +13,7 @@ export function DonationCard({ campaign, currentLocation, onViewMap }: DonationC
   const [navigationError, setNavigationError] = useState<string | null>(null);
 
   const handleViewMap = async () => {
+    if (!onViewMap) return;
     setIsNavigating(true);
     setNavigationError(null);
     try {
@@ -57,20 +58,28 @@ export function DonationCard({ campaign, currentLocation, onViewMap }: DonationC
       <div className="mt-3 flex flex-wrap gap-1.5">
         {campaign.regionTags.map((tag) => <span key={tag} className="rounded-full border border-white/[0.1] px-2 py-0.5 font-mono text-[9px] text-white/40">{tag}</span>)}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className={`mt-4 grid grid-cols-1 gap-2 ${onViewMap ? 'sm:grid-cols-2' : ''}`}>
         {campaign.donationUrl ? (
           <a href={campaign.donationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-300 px-3 py-2 text-[11px] font-semibold text-[#17130a] transition-colors hover:bg-amber-200">
-            {campaign.source === 'verified-partner' ? 'Donate via relief partner' : campaign.source === 'verified-wildfire' ? 'Donate to wildfire relief' : `Help Victims in ${currentLocation}`} <ArrowUpRight className="h-3.5 w-3.5" />
+            {campaign.source === 'verified-partner'
+              ? 'Donate via relief partner'
+              : campaign.source === 'verified-wildfire'
+                ? 'Donate to wildfire relief'
+                : campaign.source === 'every.org'
+                  ? 'Donate · global nonprofit'
+                  : `Help Victims in ${currentLocation}`} <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         ) : (
           <span className="inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-white/[0.1] px-3 py-2 text-center text-[11px] font-medium text-white/35" title="A verified direct campaign URL has not been configured.">
             Direct campaign link unavailable
           </span>
         )}
-        <button type="button" onClick={handleViewMap} disabled={isNavigating} className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.12] px-3 py-2 text-[11px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-50">
-          {isNavigating ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
-          View Disaster Area
-        </button>
+        {onViewMap && (
+          <button type="button" onClick={handleViewMap} disabled={isNavigating} className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.12] px-3 py-2 text-[11px] font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-50">
+            {isNavigating ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
+            View Disaster Area
+          </button>
+        )}
       </div>
       {navigationError && <p className="mt-2 text-[10px] text-red-200">{navigationError}</p>}
     </article>
