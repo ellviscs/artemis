@@ -1,6 +1,6 @@
 # ARTEMIS: global harmonized satellite fire calendar
 
-> NASA Space Apps Challenge 2026 · Team ITS Surabaya
+> NASA Space Apps Challenge 2026 · Arek Artemis (ITS Surabaya)
 
 Artemis is a global platform for putting NASA fire detections from MODIS (2000→) and VIIRS (2012→) on one comparable scale. The current processed archive and demonstration focus on Indonesia, while the same harmonization workflow is designed to extend to any region worldwide. From that record Artemis builds a month-by-month burning calendar, flags anomalous months and suspicious burn patterns, and turns any hotspot into an action.
 
