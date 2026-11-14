@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, CloudSun, HeartHandshake, Newspaper, Satellite, ShieldCheck } from 'lucide-react';
 
 import { FeaturePreviews, TelemetryStrip, TuningPanel } from '@/components/LandingExtras';
@@ -36,9 +36,27 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
   const tuning = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('tune');
   const onCount = useCallback((n: number) => setLiveCount(n), []);
   const selected = solutionCards[activeSolution];
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Scroll choreography (GSAP + ScrollTrigger + SplitText) loads as its own chunk once
+  // fonts are ready, so line splits match the final type. Content is fully visible
+  // without it; reduced motion skips it entirely (handled inside initLandingMotion).
+  useEffect(() => {
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+    Promise.all([import('@/components/landing/landingMotion'), document.fonts?.ready])
+      .then(([m]) => {
+        if (!cancelled && rootRef.current) cleanup = m.initLandingMotion(rootRef.current);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen overflow-hidden bg-karhutla-paper text-neutral-900">
+    <div ref={rootRef} className="min-h-screen overflow-hidden bg-karhutla-paper text-neutral-900">
       <header className="relative z-20 border-b border-neutral-900/10 bg-karhutla-paper/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 sm:px-8">
           <button onClick={onOpenAbout} className="flex items-center gap-3 text-left" aria-label="About Artemis">
@@ -59,21 +77,22 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
       </header>
 
       <main>
-        <section className="flow-hero grain relative">
-          <div className="relative z-[2] mx-auto grid max-w-[1440px] gap-10 px-5 pb-28 pt-12 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-14 lg:pb-36 lg:pt-16">
-            <div>
-              <div className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
+        <section data-hero className="flow-hero grain relative overflow-hidden">
+          <div data-heat aria-hidden className="pointer-events-none absolute inset-0 opacity-0" style={{ background: 'radial-gradient(60% 45% at 70% 100%, rgba(217,131,28,0.75), transparent 70%)' }} />
+          <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pt-12 sm:px-8 lg:flex lg:min-h-[50rem] lg:items-center lg:pb-40 lg:pt-10">
+            <div className="lg:max-w-[46%]">
+              <div data-hero-fade className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
                 From detection to informed action
               </div>
-              <h1 className="max-w-3xl font-display text-[1.7rem] font-bold leading-[1.12] text-neutral-950 sm:text-4xl lg:text-[3.3rem] lg:leading-[1.08]">
-                Wildfire signals are everywhere.
-                <span className="display-sweep mt-2 block">Clarity is not.</span>
+              <h1 className="font-display text-[1.7rem] font-bold leading-[1.12] text-neutral-950 sm:text-4xl lg:text-[3.1rem] lg:leading-[1.08]">
+                <span data-split-hero className="block">Wildfire signals are everywhere.</span>
+                <span data-hero-sweep className="display-sweep mt-2 block">Clarity is not.</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
+              <p data-hero-fade className="mt-6 max-w-xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
                 Twenty-six years of NASA fire detections over Indonesia, put on one scale. Artemis shows which months
                 are unusual, which places burn again and again, and what anyone can do about a hotspot today.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div data-hero-fade className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <button onClick={onEnterConsole} className={primaryBtn}>
                   Launch command center <ArrowRight className="h-4 w-4" />
                 </button>
@@ -81,31 +100,34 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
                   <ShieldCheck className="h-4 w-4" /> Enterprise EUDR audit
                 </button>
               </div>
-              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-700">
+              <div data-hero-fade className="mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1" aria-live="polite">
+                <span className="font-display text-lg font-bold tabular-nums text-karhutla-char sm:text-xl">
+                  {liveCount === null ? 'Reading the sky…' : liveCount.toLocaleString('en-US')}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-700">
+                  {liveCount === null ? 'NASA FIRMS · today' : 'fire detections today · NASA FIRMS · each light on the globe is one'}
+                </span>
+              </div>
+              <div data-hero-fade className="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-700">
                 <span>NASA FIRMS MODIS + VIIRS · 2000–2026</span>
                 <span>Harmonized burning calendar</span>
                 <button onClick={onOpenAbout} className="uppercase underline-offset-4 hover:text-neutral-950 hover:underline">How Artemis works</button>
               </div>
             </div>
+          </div>
 
-            {/* The 3D moment: a dark window onto Earth, lit by today's real fire detections. */}
-            <div className="relative aspect-square w-full overflow-hidden rounded-[6px] bg-[#0b0908] shadow-[0_40px_90px_-30px_rgba(97,44,37,0.65)] ring-1 ring-black/40 lg:aspect-[1/1.02]">
-              <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 60%, rgba(198,116,56,0.22), transparent 70%)' }} />
-              <Suspense fallback={<div aria-hidden className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#2a1a14,#0b0908_70%)] shadow-[0_0_80px_rgba(230,148,48,0.35)]" />}>
-                <div className="absolute inset-0">
-                  <EarthHero tuning={earth} onCount={onCount} />
-                </div>
-              </Suspense>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 sm:p-5">
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">NASA FIRMS · today</div>
-                  <div className="mt-1.5 font-display text-base font-bold text-white sm:text-lg">
-                    {liveCount === null ? 'Reading the sky…' : `${liveCount.toLocaleString()} fire detections`}
+          {/* The 3D moment: Earth sits straight on the page, lit by today's real fire detections,
+              its orange atmosphere bleeding into the hero gradient. Below the text on phones,
+              cropped by the right edge on desktop. Outer div positions, inner divs animate. */}
+          <div aria-hidden className="pointer-events-none relative z-[1] mx-auto -mt-6 mb-[-18%] aspect-square w-[128%] -translate-x-[11%] sm:w-[105%] sm:-translate-x-[2.5%] lg:absolute lg:right-[-13%] lg:top-1/2 lg:m-0 lg:w-[min(70rem,64vw)] lg:-translate-y-[54%] lg:translate-x-0">
+            <div data-earth className="absolute inset-0">
+              <div data-earth-intro className="absolute inset-0">
+                <div className="absolute inset-[4%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(230,148,48,0.55) 30%, rgba(198,116,56,0.22) 52%, transparent 68%)' }} />
+                <Suspense fallback={<div className="absolute inset-[24%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#2a1a14,#0b0908_70%)]" />}>
+                  <div className="absolute inset-0">
+                    <EarthHero tuning={earth} onCount={onCount} />
                   </div>
-                </div>
-                <div className="hidden text-right font-mono text-[10px] uppercase leading-4 tracking-[0.12em] text-white/60 sm:block">
-                  Each light is a<br />real detection
-                </div>
+                </Suspense>
               </div>
             </div>
           </div>
@@ -115,12 +137,13 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         <FeaturePreviews onOpen={onOpen} />
 
         <section className="flow-solves grain relative">
+          <div data-heat aria-hidden className="pointer-events-none absolute inset-0 opacity-0" style={{ background: 'radial-gradient(70% 40% at 30% 100%, rgba(230,148,48,0.7), transparent 70%)' }} />
           <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-28 pt-14 sm:px-8 lg:pb-36 lg:pt-20">
             <div className="mb-8">
               <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-700">What Artemis solves</div>
-              <h2 className="mt-3 max-w-4xl font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">A connected picture for wildfire response</h2>
+              <h2 data-split className="mt-3 max-w-4xl font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">A connected picture for wildfire response</h2>
             </div>
-            <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+            <div data-reveal className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
               <div className="grid gap-px overflow-hidden rounded-[6px] border border-neutral-900/15 bg-neutral-900/15 sm:grid-cols-2">
                 {solutionCards.map(({ icon: Icon, title }, index) => (
                   <button
@@ -164,9 +187,9 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
             <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-6 sm:px-8 lg:pb-28">
               <div className="mb-8">
                 <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-karhutla-smoke/80">Field reporting</div>
-                <h2 id="field-reporting" className="mt-3 font-display text-2xl font-bold text-karhutla-smoke sm:text-4xl">Wildfire news</h2>
+                <h2 data-split id="field-reporting" className="mt-3 font-display text-2xl font-bold text-karhutla-smoke sm:text-4xl">Wildfire news</h2>
               </div>
-              {news}
+              <div data-reveal>{news}</div>
             </div>
           </section>
         )}

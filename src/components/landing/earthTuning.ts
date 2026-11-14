@@ -7,4 +7,5 @@ export interface EarthTuning {
   tiltFollow: number;
 }
 
-export const DEFAULT_EARTH: EarthTuning = { spin: 0.045, tiltFollow: 0.22 };
+// Spin and lean picked by the team in the ?tune=1 panel (Nov 2026).
+export const DEFAULT_EARTH: EarthTuning = { spin: 0.245, tiltFollow: 0.02 };

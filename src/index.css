@@ -194,7 +194,8 @@ input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible
     radial-gradient(60% 55% at 18% 34%, rgba(230, 148, 48, 0.85), transparent 70%),
     radial-gradient(45% 50% at 80% 26%, rgba(198, 116, 56, 0.75), transparent 70%),
     radial-gradient(55% 50% at 62% 82%, rgba(158, 67, 36, 0.7), transparent 72%),
-    linear-gradient(180deg, var(--smoke) 0%, #6e321f 6%, #c67438 14%, #e2a468 24%, #ead3b4 42%, #e5c49c 70%, #ebdcc8 90%, var(--paper) 100%);
+    /* Fixed-px top: the dark-to-ember ramp stays above the heading at any section height. */
+    linear-gradient(180deg, var(--smoke) 0px, #6e321f 36px, #c67438 96px, #e2a468 170px, #ead3b4 340px, #e5c49c 70%, #ebdcc8 90%, var(--paper) 100%);
 }
 
 .flow-solves {

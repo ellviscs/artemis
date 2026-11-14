@@ -219,7 +219,7 @@ export function FeaturePreviews({ onOpen }: { onOpen: (path: string) => void }) 
       <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-28 sm:px-8 lg:pb-28 lg:pt-36">
         <div className="mb-8 max-w-3xl">
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-900/70">Inside Artemis</div>
-          <h2 className="mt-3 font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">
+          <h2 data-split className="mt-3 font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">
             Built on the <span className="text-karhutla-char">real</span> archive
           </h2>
         </div>
