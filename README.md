@@ -1,8 +1,8 @@
-# ARTEMIS: harmonized satellite fire calendar for Indonesia
+# ARTEMIS: global harmonized satellite fire calendar
 
 > NASA Space Apps Challenge 2026 · Team ITS Surabaya
 
-Twenty-six years of NASA fire detections over Indonesia, from MODIS (2000→) and VIIRS (2012→), put on one comparable scale. From that record Artemis builds a month-by-month burning calendar, flags anomalous months and suspicious burn patterns, and turns any hotspot into an action.
+Artemis is a global platform for putting NASA fire detections from MODIS (2000→) and VIIRS (2012→) on one comparable scale. The current processed archive and demonstration focus on Indonesia, while the same harmonization workflow is designed to extend to any region worldwide. From that record Artemis builds a month-by-month burning calendar, flags anomalous months and suspicious burn patterns, and turns any hotspot into an action.
 
 **Quick path for judges:**
 1. **Landing** `/`: live telemetry, raw vs harmonized chart.
@@ -16,7 +16,7 @@ Twenty-six years of NASA fire detections over Indonesia, from MODIS (2000→) an
 
 ## The problem
 
-Indonesia's peat and forest fires (2015 and 2019 each burned well over a million hectares) are monitored mostly through 24–48 h live hotspot feeds. Those feeds answer "where is it burning now", but not "is this month unusual?", "does this place burn every few years?" or "what can I do about this hotspot?".
+Forest, peat, grassland, and agricultural fires worldwide are monitored mostly through 24–48 h live hotspot feeds. Those feeds answer "where is it burning now", but not "is this month unusual?", "does this place burn every few years?" or "what can I do about this hotspot?". Indonesia is the current demonstration region because it provides a strong test case for seasonal and recurring fire activity.
 
 The long record exists, but it can't be compared over time. When VIIRS arrived in 2012, its 375 m pixels began recording about four times as many fire pixels as 1 km MODIS for the same fires. A naive count therefore shows a fire explosion in 2012 that never happened.
 
@@ -28,7 +28,7 @@ The objectives below are paraphrased from our reading of the challenge brief.
 |---|---|---|
 | Combine MODIS and VIIRS into one consistent long-term record | Per-month VIIRS→MODIS calibration on fire cell-days; S-NPP and NOAA-20 harmonized, NOAA-21 live | `pipeline/harmonize.py`, calendar "Artemis harmonized" |
 | Show the 2012 sensor jump and its correction | Raw vs harmonized toggle on the calendar; validation chart below | Calendar toggle, landing preview |
-| Burning-activity calendar by region and month | Year × month matrix 2000–2026 for Indonesia and 5 fire provinces, or any lat/long radius or drawn polygon | `/dashboard` |
+| Burning-activity calendar by region and month | Year × month matrix 2000–2026 for the current Indonesia archive, or any lat/long radius or drawn polygon | `/dashboard` |
 | Anomalies against a long baseline | Z = (month − median) / IQR, 2001–2025 baseline, partial current month projected | Calendar anomaly panel |
 | Remove non-fire heat | Static mask: FIRMS volcano / static / offshore types plus persistent cells (18,251 sources, 428,579 detections) | Mask toggle, map overlay |
 | Spatial detail | H3 cells of ~5 km² (archive), pixel-footprint ellipses at zoom ≥ 9 | Map |
@@ -37,9 +37,9 @@ The objectives below are paraphrased from our reading of the challenge brief.
 
 ### Does Artemis cover the NASA requirements?
 
-**Yes, for the challenge workflow.** Artemis combines the processed MODIS and VIIRS archive into a comparable Indonesia-wide time series, lets users select an area and date range, provides a year-by-month burning-activity calendar with anomaly comparisons, and exports both analytics summaries and detection-level CSV data. It therefore addresses the two core needs: harmonized hotspot history and an interactive decision-support application for responders, land managers, and scientists.
+**Yes, for the challenge workflow and as a foundation for worldwide coverage.** Artemis combines the processed MODIS and VIIRS archive into a comparable time series, lets users select an area and date range, provides a year-by-month burning-activity calendar with anomaly comparisons, and exports both analytics summaries and detection-level CSV data. The current demo is Indonesia-focused, but the platform's purpose is global: to give responders, land managers, and scientists a consistent way to understand fire activity wherever harmonized data is available.
 
-The result is a statistical harmonization, not a new satellite product or a calibrated fire-probability model. Sensor differences are reduced at the fire-cell-day and monthly-count level, while cloud cover, pixel-footprint uncertainty, satellite overpass timing, and the archive's Indonesia focus remain limitations. Artemis is intended to support investigation and prioritization; it does not replace field verification, incident command, or evacuation decisions.
+The result is a statistical harmonization, not a new satellite product or a calibrated fire-probability model. Sensor differences are reduced at the fire-cell-day and monthly-count level, while cloud cover, pixel-footprint uncertainty, satellite overpass timing, and the current archive's Indonesia focus remain limitations. Artemis is intended to support investigation and prioritization; it does not replace field verification, incident command, or evacuation decisions.
 
 **Beyond the brief:**
 - A forensic signature score per cell.
