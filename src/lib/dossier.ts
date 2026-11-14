@@ -65,9 +65,9 @@ export function dossierCsv(input: DossierInput, rows: DossierDetection[]): strin
   );
 }
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
+export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 
-function barsSvg(values: number[], labels: string[], opts: { title: string; signed?: boolean; unit: string }): string {
+export function barsSvg(values: number[], labels: string[], opts: { title: string; signed?: boolean; unit: string; markFrom?: number }): string {
   const w = 640;
   const h = 170;
   const pad = { l: 36, r: 8, t: 10, b: 26 };
@@ -79,12 +79,14 @@ function barsSvg(values: number[], labels: string[], opts: { title: string; sign
     .map((v, i) => {
       const y0 = y(0);
       const y1 = y(v);
-      const fill = opts.signed ? (v >= 1.5 ? '#b10026' : v >= 0 ? '#fd8d3c' : '#7f7f7f') : '#fd8d3c';
+      const fill = opts.signed
+        ? (v >= 1.5 ? '#b10026' : v >= 0 ? '#fd8d3c' : '#7f7f7f')
+        : opts.markFrom !== undefined && i >= opts.markFrom ? '#b10026' : '#fd8d3c';
       return `<rect x="${(pad.l + i * bw + 1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.max(bw - 2, 1).toFixed(1)}" height="${Math.max(Math.abs(y1 - y0), 0.5).toFixed(1)}" fill="${fill}"><title>${labels[i]}: ${v.toFixed(2)} ${opts.unit}</title></rect>`;
     })
     .join('');
   const ticks = labels
-    .map((l, i) => (i % 5 === 0 || i === labels.length - 1 ? `<text x="${(pad.l + i * bw + bw / 2).toFixed(1)}" y="${h - 8}" font-size="10" text-anchor="middle" fill="#333">${l}</text>` : ''))
+    .map((l, i) => ((i % 5 === 0 && i < labels.length - 3) || i === labels.length - 1 ? `<text x="${(pad.l + i * bw + bw / 2).toFixed(1)}" y="${h - 8}" font-size="10" text-anchor="middle" fill="#333">${l}</text>` : ''))
     .join('');
   const ref = opts.signed ? `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(1.5)}" y2="${y(1.5)}" stroke="#b10026" stroke-dasharray="4 3"/><text x="${w - pad.r}" y="${y(1.5) - 3}" font-size="9" text-anchor="end" fill="#b10026">+1.5σ</text>` : '';
   return `<figure><figcaption>${esc(opts.title)}</figcaption><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${esc(opts.title)}">

@@ -10,7 +10,7 @@ import {
   type LiveFireData,
 } from '@/data/firmsApi';
 import type { FireHotspot } from '@/types';
-import { aoiContains, aoiToRegion, archiveCell, type Aoi } from '@/lib/aoi';
+import { aoiContains, aoiToRegion, archiveCell, encodeAoi, type Aoi } from '@/lib/aoi';
 import { FiltersProvider, useFilters } from '@/state/filters';
 import { ControlBar } from '@/components/ControlBar';
 import { BurningCalendar } from '@/components/BurningCalendar';
@@ -190,7 +190,8 @@ function Dashboard() {
               <ExternalLink className="h-3 w-3" />
             </a>
             <Link
-              to="/audit"
+              to={aoi.kind === 'polygon' ? `/audit?poly=${encodeAoi(aoi).poly}` : '/audit'}
+              title={aoi.kind === 'polygon' ? 'Audit the drawn polygon' : 'Open the EUDR audit portal'}
               className="rounded-md border border-white/[0.14] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-white/60 transition-colors hover:border-accent-400/40 hover:text-accent-200"
             >
               EUDR Audit
