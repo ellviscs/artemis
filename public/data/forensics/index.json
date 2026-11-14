@@ -1,0 +1,20 @@
+{
+ "weights": {
+  "offSeason": 0.3,
+  "geometry": 0.2,
+  "timing": 0.15,
+  "recurrence": 0.35
+ },
+ "tileResolution": 3,
+ "cellResolution": 7,
+ "minActiveDays": 3,
+ "method": "rule-based",
+ "scoreQuantiles": {
+  "0.1": 21.8,
+  "0.25": 30.2,
+  "0.5": 38.4,
+  "0.75": 46.1,
+  "0.9": 53.0,
+  "0.99": 62.2
+ }
+}

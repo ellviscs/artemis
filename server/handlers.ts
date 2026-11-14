@@ -1,0 +1,98 @@
+// Server-side handlers shared by the Vercel functions in /api and the Vite dev
+// middleware in vite.config.ts. API keys are read here and never reach the browser.
+
+export interface ProxyResult {
+  status: number;
+  body: string;
+  contentType: string;
+  cacheSeconds?: number;
+}
+
+type Env = Record<string, string | undefined>;
+
+const FIRMS_PRODUCTS = new Set([
+  'MODIS_NRT',
+  'MODIS_SP',
+  'VIIRS_NOAA20_NRT',
+  'VIIRS_NOAA20_SP',
+  'VIIRS_NOAA21_NRT',
+  'VIIRS_NOAA21_SP',
+  'VIIRS_SNPP_SP',
+]);
+
+const text = (status: number, body: string): ProxyResult => ({
+  status,
+  body,
+  contentType: 'text/plain; charset=utf-8',
+});
+
+const isDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+const isArea = (value: string) =>
+  value === 'world' || /^-?\d+(\.\d+)?(,-?\d+(\.\d+)?){3}$/.test(value);
+
+/**
+ * GET /api/firms?product=VIIRS_NOAA21_NRT&area=world&days=5&date=2026-11-14
+ * Proxies the NASA FIRMS Area API (CSV) with the server-held MAP_KEY.
+ */
+export async function handleFirms(params: URLSearchParams, env: Env): Promise<ProxyResult> {
+  const key = env.FIRMS_API_KEY;
+  if (!key) return text(500, 'FIRMS_API_KEY is not configured on the server.');
+
+  const product = params.get('product') ?? '';
+  const area = params.get('area') ?? 'world';
+  const days = Number(params.get('days') ?? '1');
+  const date = params.get('date') ?? '';
+
+  if (!FIRMS_PRODUCTS.has(product)) return text(400, `Unsupported FIRMS product: ${product}`);
+  if (!isArea(area)) return text(400, 'area must be "world" or "west,south,east,north".');
+  if (!Number.isInteger(days) || days < 1 || days > 5) return text(400, 'days must be 1–5.');
+  if (date && !isDate(date)) return text(400, 'date must be YYYY-MM-DD.');
+
+  const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(key)}/${product}/${area}/${days}${date ? `/${date}` : ''}`;
+  const response = await fetch(url);
+  const body = await response.text();
+  return {
+    status: response.status,
+    body,
+    contentType: 'text/csv; charset=utf-8',
+    cacheSeconds: response.ok ? 900 : undefined,
+  };
+}
+
+/**
+ * GET /api/weather?lat=-0.5&lon=101.4
+ * Proxies OpenWeatherMap current weather (metric) with the server-held key.
+ */
+export async function handleWeather(params: URLSearchParams, env: Env): Promise<ProxyResult> {
+  const key = env.OPENWEATHER_API_KEY;
+  if (!key) return text(500, 'OPENWEATHER_API_KEY is not configured on the server.');
+
+  const lat = Number(params.get('lat'));
+  const lon = Number(params.get('lon'));
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    return text(400, 'lat and lon must be valid coordinates.');
+  }
+
+  const query = new URLSearchParams({
+    lat: lat.toString(),
+    lon: lon.toString(),
+    appid: key,
+    units: 'metric',
+  });
+  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?${query.toString()}`);
+  const body = await response.text();
+  return {
+    status: response.status,
+    body,
+    contentType: 'application/json; charset=utf-8',
+    cacheSeconds: response.ok ? 600 : undefined,
+  };
+}
+
+export function toResponse(result: ProxyResult): Response {
+  const headers: Record<string, string> = { 'Content-Type': result.contentType };
+  if (result.cacheSeconds) {
+    headers['Cache-Control'] = `public, s-maxage=${result.cacheSeconds}, stale-while-revalidate=${result.cacheSeconds}`;
+  }
+  return new Response(result.body, { status: result.status, headers });
+}

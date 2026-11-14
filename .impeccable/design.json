@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-14T05:58:25.292652+00:00",
+  "title": "Design System: ARTEMIS",
+  "extensions": {
+    "colorMeta": {
+      "signal-orange": {
+        "role": "primary",
+        "displayName": "Signal Orange",
+        "canonical": "#f9880f",
+        "tonalRamp": [
+          "#451704",
+          "#79310f",
+          "#b74a07",
+          "#dd6805",
+          "#f9880f",
+          "#ffab2e",
+          "#ffc75d",
+          "#ffe09a"
+        ]
+      },
+      "signal-orange-bright": {
+        "role": "primary",
+        "displayName": "Signal Orange Bright",
+        "canonical": "#ffab2e",
+        "tonalRamp": [
+          "#451704",
+          "#79310f",
+          "#b74a07",
+          "#dd6805",
+          "#f9880f",
+          "#ffab2e",
+          "#ffc75d",
+          "#ffe09a"
+        ]
+      },
+      "ember": {
+        "role": "primary",
+        "displayName": "Ember",
+        "canonical": "#ffc75d",
+        "tonalRamp": [
+          "#451704",
+          "#79310f",
+          "#b74a07",
+          "#dd6805",
+          "#f9880f",
+          "#ffab2e",
+          "#ffc75d",
+          "#ffe09a"
+        ]
+      },
+      "ember-pale": {
+        "role": "primary",
+        "displayName": "Ember Pale",
+        "canonical": "#ffe09a",
+        "tonalRamp": [
+          "#451704",
+          "#79310f",
+          "#b74a07",
+          "#dd6805",
+          "#f9880f",
+          "#ffab2e",
+          "#ffc75d",
+          "#ffe09a"
+        ]
+      },
+      "night-black": {
+        "role": "neutral",
+        "displayName": "Night Black",
+        "canonical": "#050505",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "console-black": {
+        "role": "neutral",
+        "displayName": "Console Black",
+        "canonical": "#07090b",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "header-black": {
+        "role": "neutral",
+        "displayName": "Header Black",
+        "canonical": "#080b0e",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "panel-black": {
+        "role": "neutral",
+        "displayName": "Panel Black",
+        "canonical": "#0b0b0b",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "raised-black": {
+        "role": "neutral",
+        "displayName": "Raised Black",
+        "canonical": "#111111",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "ash-text": {
+        "role": "neutral",
+        "displayName": "Ash Text",
+        "canonical": "#e4e7ec",
+        "tonalRamp": [
+          "#050505",
+          "#07090b",
+          "#0b0b0b",
+          "#111111",
+          "#1c1c1c",
+          "#373737",
+          "#7d7d7d",
+          "#e4e7ec"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(255, 255, 255, 0.12)"
+      },
+      "status-clear": {
+        "role": "status",
+        "displayName": "Clear",
+        "canonical": "#6ee7b7",
+        "tonalRamp": [
+          "oklch(15% 0.08 165)",
+          "oklch(25% 0.08 165)",
+          "oklch(35% 0.08 165)",
+          "oklch(45% 0.08 165)",
+          "oklch(58% 0.08 165)",
+          "oklch(70% 0.08 165)",
+          "oklch(82% 0.08 165)",
+          "oklch(93% 0.08 165)"
+        ]
+      },
+      "status-advisory": {
+        "role": "status",
+        "displayName": "Advisory",
+        "canonical": "#7dd3fc",
+        "tonalRamp": [
+          "oklch(15% 0.08 230)",
+          "oklch(25% 0.08 230)",
+          "oklch(35% 0.08 230)",
+          "oklch(45% 0.08 230)",
+          "oklch(58% 0.08 230)",
+          "oklch(70% 0.08 230)",
+          "oklch(82% 0.08 230)",
+          "oklch(93% 0.08 230)"
+        ]
+      },
+      "status-watch": {
+        "role": "status",
+        "displayName": "Watch",
+        "canonical": "#fcd34d",
+        "tonalRamp": [
+          "oklch(15% 0.08 90)",
+          "oklch(25% 0.08 90)",
+          "oklch(35% 0.08 90)",
+          "oklch(45% 0.08 90)",
+          "oklch(58% 0.08 90)",
+          "oklch(70% 0.08 90)",
+          "oklch(82% 0.08 90)",
+          "oklch(93% 0.08 90)"
+        ]
+      },
+      "status-warning": {
+        "role": "status",
+        "displayName": "Warning",
+        "canonical": "#fdba74",
+        "tonalRamp": [
+          "oklch(15% 0.08 60)",
+          "oklch(25% 0.08 60)",
+          "oklch(35% 0.08 60)",
+          "oklch(45% 0.08 60)",
+          "oklch(58% 0.08 60)",
+          "oklch(70% 0.08 60)",
+          "oklch(82% 0.08 60)",
+          "oklch(93% 0.08 60)"
+        ]
+      },
+      "status-extreme": {
+        "role": "status",
+        "displayName": "Extreme",
+        "canonical": "#fca5a5",
+        "tonalRamp": [
+          "oklch(15% 0.08 25)",
+          "oklch(25% 0.08 25)",
+          "oklch(35% 0.08 25)",
+          "oklch(45% 0.08 25)",
+          "oklch(58% 0.08 25)",
+          "oklch(70% 0.08 25)",
+          "oklch(82% 0.08 25)",
+          "oklch(93% 0.08 25)"
+        ]
+      },
+      "sensor-modis": {
+        "role": "data",
+        "displayName": "MODIS Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "oklch(15% 0.08 260)",
+          "oklch(25% 0.08 260)",
+          "oklch(35% 0.08 260)",
+          "oklch(45% 0.08 260)",
+          "oklch(58% 0.08 260)",
+          "oklch(70% 0.08 260)",
+          "oklch(82% 0.08 260)",
+          "oklch(93% 0.08 260)"
+        ]
+      },
+      "sensor-viirs": {
+        "role": "data",
+        "displayName": "VIIRS Cyan",
+        "canonical": "#06b6d4",
+        "tonalRamp": [
+          "oklch(15% 0.08 215)",
+          "oklch(25% 0.08 215)",
+          "oklch(35% 0.08 215)",
+          "oklch(45% 0.08 215)",
+          "oklch(58% 0.08 215)",
+          "oklch(70% 0.08 215)",
+          "oklch(82% 0.08 215)",
+          "oklch(93% 0.08 215)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing hero headline only; 2.25rem mobile to 3.75rem desktop."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles on dashboard and audit views."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel, card and warning titles in sentence case."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions and caveats, max ~65ch. Inter kept for now; open for a later typeset pass."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Eyebrows, metric labels, status levels, button text. Uppercase, three words or fewer."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Stat values, counts, FRP, Z-scores; tabular numerals."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel-ambient",
+        "value": "0 1px 0 rgba(255,255,255,0.025), 0 16px 32px rgba(0,0,0,0.18)",
+        "purpose": "Standard panel surface; faint machined top edge."
+      },
+      {
+        "name": "overlay-lift",
+        "value": "0 24px 80px rgba(0,0,0,0.35)",
+        "purpose": "Floating hero cards and modals."
+      },
+      {
+        "name": "signal-glow",
+        "value": "0 0 14px rgba(249,136,15,0.8)",
+        "purpose": "Live status dots and the primary hero button only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fade-in",
+        "value": "0.4s ease-out",
+        "purpose": "Panels and results appearing."
+      },
+      {
+        "name": "state",
+        "value": "150ms ease",
+        "purpose": "Hover and color transitions on controls and calendar cells."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action on a view.",
+      "html": "<button class=\"ds-btn-primary\">Launch command center <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;background:#f9880f;color:#050505;border:none;border-radius:6px;padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;box-shadow:0 0 24px rgba(249,136,15,0.2);cursor:pointer;transition:background 150ms ease;}.ds-btn-primary:hover{background:#ffab2e;}.ds-btn-primary:focus-visible{outline:2px solid #f9880f;outline-offset:3px;box-shadow:0 0 0 4px rgba(249,136,15,0.18);}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions beside a primary.",
+      "html": "<button class=\"ds-btn-secondary\">How Artemis works</button>",
+      "css": ".ds-btn-secondary{background:transparent;color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.16);border-radius:6px;padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:border-color 150ms ease,color 150ms ease;}.ds-btn-secondary:hover{border-color:rgba(255,255,255,0.3);color:#fff;}.ds-btn-secondary:focus-visible{outline:2px solid #f9880f;outline-offset:3px;box-shadow:0 0 0 4px rgba(249,136,15,0.18);}"
+    },
+    {
+      "name": "Header Action (tinted)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action inside the sticky header.",
+      "html": "<button class=\"ds-btn-tint\">About Artemis</button>",
+      "css": ".ds-btn-tint{background:rgba(249,136,15,0.1);color:#ffe09a;border:1px solid rgba(249,136,15,0.35);border-radius:6px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 150ms ease;}.ds-btn-tint:hover{background:rgba(249,136,15,0.2);}.ds-btn-tint:focus-visible{outline:2px solid #f9880f;outline-offset:3px;box-shadow:0 0 0 4px rgba(249,136,15,0.18);}"
+    },
+    {
+      "name": "Navigation Header",
+      "kind": "nav",
+      "description": "Sticky console header with wordmark and actions.",
+      "html": "<header class=\"ds-nav\"><div><div class=\"ds-nav-mark\">ARTEMIS <span class=\"ds-nav-tag\">Monitor</span></div><div class=\"ds-nav-eyebrow\">Satellite fire intelligence</div></div><nav class=\"ds-nav-links\"><a href=\"#\">EUDR Audit</a><a href=\"#\" class=\"ds-nav-cta\">About</a></nav></header>",
+      "css": ".ds-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 24px;background:rgba(8,11,14,0.95);border-bottom:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 30px rgba(0,0,0,0.2);color:#e4e7ec;}.ds-nav-mark{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;letter-spacing:0.08em;color:#fff;display:flex;align-items:center;gap:8px;}.ds-nav-tag{border:1px solid rgba(249,136,15,0.25);background:rgba(249,136,15,0.1);color:#ffc75d;border-radius:2px;padding:2px 6px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;}.ds-nav-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:2px;}.ds-nav-links{display:flex;gap:8px;}.ds-nav-links a{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.6);text-decoration:none;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:8px 12px;transition:color 150ms ease,border-color 150ms ease;}.ds-nav-links a:hover{color:#ffe09a;border-color:rgba(249,136,15,0.4);}.ds-nav-links a.ds-nav-cta{background:rgba(249,136,15,0.1);border-color:rgba(249,136,15,0.35);color:#ffe09a;}.ds-nav-links a:focus-visible{outline:2px solid #f9880f;outline-offset:3px;box-shadow:0 0 0 4px rgba(249,136,15,0.18);}"
+    },
+    {
+      "name": "Badge / DEMO tag",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Sensor names, sources and mandatory DEMO / SIMULATED tags.",
+      "html": "<span class=\"ds-badge\">VIIRS NOAA-21</span> <span class=\"ds-badge ds-badge-demo\">Simulated</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;border-radius:2px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;}.ds-badge-demo{background:rgba(252,211,77,0.1);border-color:rgba(252,211,77,0.25);color:#fcd34d;}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Standard console card with mono title row.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-head\"><h3>Satellite sensor comparison</h3><p>Live FIRMS · MODIS (1 km) vs VIIRS (375 m)</p></div><div class=\"ds-panel-body\">Harmonized detections reduce double counting between sensors that observed the same fire.</div></section>",
+      "css": ".ds-panel{background:#0b0b0b;border:1px solid rgba(255,255,255,0.12);border-radius:4px;box-shadow:0 1px 0 rgba(255,255,255,0.025),0 16px 32px rgba(0,0,0,0.18);color:#e4e7ec;max-width:420px;overflow:hidden;}.ds-panel-head{padding:12px 16px;border-bottom:1px solid rgba(157,173,190,0.15);}.ds-panel-head h3{margin:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.9);}.ds-panel-head p{margin:4px 0 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);}.ds-panel-body{padding:16px;font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.6);}"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "custom",
+      "refersTo": "stat-tile",
+      "description": "The console's unit readout: label over a tabular mono value.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-label\">Harmonized detections</div><div class=\"ds-stat-value\">1,284<span>hotspots</span></div></div>",
+      "css": ".ds-stat{background:#111;border:1px solid rgba(255,255,255,0.12);border-radius:2px;padding:12px;width:200px;transition:border-color 150ms ease,background 150ms ease;}.ds-stat:hover{border-color:rgba(255,255,255,0.24);background:#171717;}.ds-stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.45);}.ds-stat-value{margin-top:8px;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;color:#ffab2e;display:flex;align-items:baseline;gap:6px;}.ds-stat-value span{font-size:11px;font-weight:500;color:rgba(255,255,255,0.4);}"
+    },
+    {
+      "name": "Early-Warning Banner",
+      "kind": "custom",
+      "description": "Status-colored live warning with caveat line.",
+      "html": "<section class=\"ds-warn\"><div class=\"ds-warn-row\"><span class=\"ds-warn-icon\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><path d=\"M12 9v4\"/><path d=\"M12 17h.01\"/></svg></span><div><div class=\"ds-warn-level\">Live early warning · Warning</div><h2>Elevated fire activity detected</h2><p>1,284 spatially harmonized FIRMS detections observed in Riau today.</p></div></div><div class=\"ds-warn-caveat\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/></svg><span>A satellite observation triage signal, not a fire-spread forecast.</span></div></section>",
+      "css": ".ds-warn{border:1px solid rgba(251,146,60,0.3);border-left-width:4px;background:rgba(251,146,60,0.05);border-radius:4px;padding:20px;color:#e4e7ec;max-width:560px;}.ds-warn-row{display:flex;gap:12px;align-items:flex-start;}.ds-warn-icon{color:#fdba74;margin-top:2px;}.ds-warn-level{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#fdba74;}.ds-warn h2{margin:4px 0 0;font-family:Inter,system-ui,sans-serif;font-size:18px;font-weight:600;color:#fff;}.ds-warn p{margin:8px 0 0;font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.6);}.ds-warn-caveat{display:flex;gap:8px;align-items:flex-start;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);font-family:Inter,system-ui,sans-serif;font-size:11px;line-height:1.6;color:rgba(255,255,255,0.45);}.ds-warn-caveat svg{color:rgba(110,231,183,0.7);flex-shrink:0;margin-top:2px;}"
+    },
+    {
+      "name": "Map Overlay Panel",
+      "kind": "custom",
+      "refersTo": "map-overlay",
+      "description": "Translucent panel floating inside the map for layers and legends.",
+      "html": "<div class=\"ds-overlay\"><div class=\"ds-overlay-title\">Layers</div><label><span class=\"ds-dot\" style=\"background:#f9880f\"></span>Harmonized</label><label><span class=\"ds-dot\" style=\"border:1px solid rgba(255,255,255,0.2)\"></span>MODIS raw</label><label><span class=\"ds-dot\" style=\"border:1px solid rgba(255,255,255,0.2)\"></span>VIIRS raw</label></div>",
+      "css": ".ds-overlay{background:rgba(11,13,11,0.9);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:10px;width:180px;color:#e4e7ec;}.ds-overlay-title{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.45);}.ds-overlay label{display:flex;align-items:center;gap:10px;font-family:Inter,system-ui,sans-serif;font-size:14px;color:rgba(255,255,255,0.75);cursor:pointer;}.ds-overlay label:hover{color:#fff;}.ds-dot{width:12px;height:12px;border-radius:9999px;display:inline-block;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Ops Console",
+    "overview": "ARTEMIS is a mission-control desk at 3 a.m. The room is dark and quiet so the eye goes straight to the one thing that matters: a fire signal. Everything structural (panels, rules, labels, gridlines) sits in near-black and low-contrast ash; orange is reserved for signal and the single primary action. The console reads as an instrument, not a marketing page: mono uppercase labels name each readout, numbers sit in tabular mono, and prose is short and factual.\n\nDensity is operational. Emergency managers scan region, anomaly and next action in seconds, so panels are compact, borders are hairlines, and decoration is limited to a faint 40px blueprint grid on the page background and a soft orange glow behind live indicators. Data visualisations are the brightest, most colorful things on screen, which is why their ramps must be colorblind-safe and must never compete with the brand orange.\n\nThe aesthetic is binding (see PRODUCT.md): this dark tactical world extends the live prototype at `artemis-1-1.vercel.app`; it does not get a light theme or a softer consumer look.",
+    "keyCharacteristics": [
+      "Near-black layered surfaces (#050505 → #111111) separated by 12%-white hairlines.",
+      "One brand voice: signal orange, used for primary actions, live indicators and accent text only.",
+      "JetBrains Mono for every label, headline and number; Inter only for running prose.",
+      "Tight, technical corners (2–6px); full rounding only for status dots.",
+      "Status is color-coded and always paired with a text label and icon."
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Rule",
+        "section": "colors",
+        "body": "Signal Orange covers no more than ~10% of any screen. If two things on the same screen are both orange, one of them is wrong."
+      },
+      {
+        "name": "The Safe Ramp Rule",
+        "section": "colors",
+        "body": "Anything that encodes quantity (calendar heatmap, hexagon grid, anomaly scale) uses a colorblind-safe ramp (Viridis, Cividis or YlOrRd), labeled \"Colorblind-safe\" in the UI. The legacy `flame` scale in `tailwind.config.js` is not colorblind-safe and must not be used for data."
+      },
+      {
+        "name": "The Never-Color-Alone Rule",
+        "section": "colors",
+        "body": "Every status color ships with a text label (CLEAR, WATCH, …) and, where space allows, an icon."
+      },
+      {
+        "name": "The Readout Rule",
+        "section": "typography",
+        "body": "Every number a user compares (counts, MW, %, σ, dates in tables) is mono with tabular numerals so columns align."
+      },
+      {
+        "name": "The Short Caps Rule",
+        "section": "typography",
+        "body": "Uppercase is for labels of three words or fewer. Sentences are never set in caps."
+      },
+      {
+        "name": "The Glow-Means-Live Rule",
+        "section": "elevation",
+        "body": "A glow is a status signal, never decoration. If nothing is live, nothing glows."
+      }
+    ],
+    "dos": [
+      "**Do** keep every surface in the near-black range (#050505–#111111) and separate surfaces with hairlines.",
+      "**Do** reserve Signal Orange (#f9880f) for the single primary action, live indicators and the harmonized data layer.",
+      "**Do** set labels, headlines and numbers in JetBrains Mono, with tabular numerals for anything compared.",
+      "**Do** use Viridis, Cividis or YlOrRd for every quantitative ramp, with a legend and a \"Colorblind-safe\" label.",
+      "**Do** pair every status color with its text label and an icon.",
+      "**Do** put a visible `DEMO` or `SIMULATED` badge on every simulated element.",
+      "**Do** use 2–6px corners; save full rounding for dots and toggles."
+    ],
+    "donts": [
+      "**Don't** introduce a light theme or light panels.",
+      "**Don't** use the legacy `flame` scale or brand orange as a data ramp.",
+      "**Don't** add glows, gradients or blur blobs that don't signal a live state (the landing hero's single ambient orange blur is the only exception).",
+      "**Don't** set sentences in uppercase or use Inter for labels and headings.",
+      "**Don't** use 12px+ rounded corners on new panels or controls.",
+      "**Don't** drop readable text below 45% white opacity on near-black (10px text at 40% fails WCAG AA 4.5:1)."
+    ]
+  }
+}
