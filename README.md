@@ -148,12 +148,17 @@ Server-side variables are read only by the `/api/*` functions (and the Vite dev 
 
 ## Deploying to Vercel
 
-`vercel.json` serves the SPA, the static `/data` archive and four functions: `api/firms`, `api/weather`, `api/tle` and `api/news`. Set the server-side variables in **Project → Settings → Environment Variables**.
+`vercel.json` serves the SPA (every app route falls back to `index.html`), the static `/data` archive with cache headers, and four functions: `api/firms`, `api/weather`, `api/tle` and `api/news`.
 
-**Size limit.** The static archive is about 126 MB. On the Hobby plan, Vercel limits CLI uploads to 100 MB of source files, so you have three options:
-- deploy from a Git repository through Vercel's Git integration;
-- use the Pro plan;
-- shrink the archive, for example by gzipping the `hex/` and `forensics/` JSON as the point files already are.
+**Recommended: GitHub + Vercel Git integration.** The static archive is about 126 MB, over the 100 MB limit for CLI uploads on the Hobby plan; deploying from a Git repository has no such limit.
+
+1. Push this repository to GitHub (every file in the repo is under GitHub's 100 MB per-file limit).
+2. In Vercel: **Add New → Project → Import** the repository. Framework preset: **Vite** (detected). Build command `npm run build`, output `dist` (both also set in `vercel.json`).
+3. **Settings → Environment Variables** (Production and Preview): add the variables from the table above. `FIRMS_API_KEY` and `OPENWEATHER_API_KEY` are required for the live map and weather; the others are optional.
+4. Deploy. Every push to `main` redeploys; pull requests get preview URLs.
+5. After the first deploy, set the absolute share-card URL in `index.html` (`og:image`, `twitter:image`) to `https://<your-domain>/og-image.png`.
+
+Alternatives to the Git route: the Pro plan, or shrinking the archive under 100 MB (for example by gzipping the `hex/` and `forensics/` JSON as the point files already are) and deploying with `vercel --prod`.
 
 ## Project structure
 

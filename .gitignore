@@ -30,3 +30,7 @@ pipeline/__pycache__/
 **/.env
 .impeccable/hook.cache.json
 __pycache__/
+
+# Local tool state (never part of the published repo)
+.claude/
+.vercel
