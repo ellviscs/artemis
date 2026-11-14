@@ -6,8 +6,8 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
-        // Display serif that echoes the italic Artemis wordmark; headlines only.
-        display: ['"Instrument Serif"', 'Georgia', 'serif'],
+        // Wide extended display face for headlines only; always uppercase (see .font-display in index.css).
+        display: ['Syncopate', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Primary — neutral aerospace grayscale
@@ -61,6 +61,7 @@ export default {
           char: '#612c25',
           paper: '#ecebe8',
           ink: '#171717',
+          smoke: '#1a1210', // warm near-black where landing gradients bottom out
         },
         // Success — green
         success: {

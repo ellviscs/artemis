@@ -62,8 +62,8 @@ export function TelemetryStrip() {
   ];
 
   return (
-    <section aria-label={`Satellite telemetry${live.data ? `, ${live.data.date}` : ''}`} className="ticker relative overflow-hidden border-y border-black/20 bg-karhutla-ink text-white" tabIndex={0}>
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center bg-gradient-to-r from-karhutla-ink via-karhutla-ink to-transparent pl-5 pr-10 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-300">
+    <section aria-label={`Satellite telemetry${live.data ? `, ${live.data.date}` : ''}`} className="ticker relative overflow-hidden bg-karhutla-smoke text-white" tabIndex={0}>
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center bg-gradient-to-r from-karhutla-smoke via-karhutla-smoke to-transparent pl-5 pr-10 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-300">
         Live
       </div>
       {/* Two copies side by side; the track slides by half its width for a seamless loop. */}
@@ -71,7 +71,7 @@ export function TelemetryStrip() {
         <ul className="flex">{items.map((it) => <TickerItem key={it.label} {...it} />)}</ul>
         <ul className="flex" aria-hidden>{items.map((it) => <TickerItem key={`dup-${it.label}`} {...it} />)}</ul>
       </div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-karhutla-ink to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-karhutla-smoke to-transparent" />
     </section>
   );
 }
@@ -216,11 +216,11 @@ export function FeaturePreviews({ onOpen }: { onOpen: (path: string) => void }) 
 
   return (
     <section className="thermal-field grain relative overflow-hidden">
-      <div className="relative z-[2] mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:py-20">
-        <div className="mb-8 max-w-2xl">
+      <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-28 sm:px-8 lg:pb-28 lg:pt-36">
+        <div className="mb-8 max-w-3xl">
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-900/70">Inside Artemis</div>
-          <h2 className="mt-2 font-display text-4xl leading-[1.05] text-neutral-950 sm:text-5xl">
-            Built on the <em>real</em> archive
+          <h2 className="mt-3 font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">
+            Built on the <span className="text-karhutla-char">real</span> archive
           </h2>
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
@@ -229,7 +229,7 @@ export function FeaturePreviews({ onOpen }: { onOpen: (path: string) => void }) 
               <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-800">
                 <Icon className="h-3.5 w-3.5" /> {kicker}
               </div>
-              <h3 className="mt-3 font-display text-2xl leading-tight text-neutral-950">{title}</h3>
+              <h3 className="mt-3 font-display text-base font-bold leading-snug text-neutral-950 sm:text-lg">{title}</h3>
               <p className="mt-2 text-[13px] leading-6 text-neutral-800">{body}</p>
               <div className="mt-5 flex-1 rounded-[6px] border border-black/10 bg-white/45 p-4">{visual}</div>
               <button

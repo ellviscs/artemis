@@ -4,6 +4,7 @@ import { ArrowRight, CloudSun, HeartHandshake, Newspaper, Satellite, ShieldCheck
 import { FeaturePreviews, TelemetryStrip, TuningPanel } from '@/components/LandingExtras';
 import { DEFAULT_EARTH, type EarthTuning } from '@/components/landing/earthTuning';
 import artemisWordmark from '@/logo/artemis-wordmark-ink.png';
+import artemisWordmarkLight from '@/logo/artemis-wordmark-light.png';
 import { cn } from '@/lib/utils';
 
 // three.js is large: load the globe as its own chunk after first paint.
@@ -58,22 +59,15 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
       </header>
 
       <main>
-        <section className="grain relative">
-          {/* A faint thermal haze behind the globe window. */}
-          <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(230,148,48,0.45), rgba(198,116,56,0.18) 45%, transparent 70%)' }} />
-          <div className="relative z-[2] mx-auto grid max-w-[1440px] gap-10 px-5 pb-14 pt-12 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-14 lg:pb-20 lg:pt-16">
+        <section className="flow-hero grain relative">
+          <div className="relative z-[2] mx-auto grid max-w-[1440px] gap-10 px-5 pb-28 pt-12 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-14 lg:pb-36 lg:pt-16">
             <div>
               <div className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
                 From detection to informed action
               </div>
-              <h1 className="max-w-3xl font-display text-5xl leading-[0.98] tracking-[-0.01em] text-neutral-950 sm:text-7xl">
+              <h1 className="max-w-3xl font-display text-[1.7rem] font-bold leading-[1.12] text-neutral-950 sm:text-4xl lg:text-[3.3rem] lg:leading-[1.08]">
                 Wildfire signals are everywhere.
-                <span
-                  className="block bg-clip-text italic text-transparent"
-                  style={{ backgroundImage: 'linear-gradient(100deg, #c67438 0%, #9e4324 55%, #612c25 100%)' }}
-                >
-                  Clarity is not.
-                </span>
+                <span className="display-sweep mt-2 block">Clarity is not.</span>
               </h1>
               <p className="mt-6 max-w-xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
                 Twenty-six years of NASA fire detections over Indonesia, put on one scale. Artemis shows which months
@@ -105,7 +99,7 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
               <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 sm:p-5">
                 <div>
                   <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">NASA FIRMS · today</div>
-                  <div className="mt-1 font-display text-2xl text-white sm:text-3xl">
+                  <div className="mt-1.5 font-display text-base font-bold text-white sm:text-lg">
                     {liveCount === null ? 'Reading the sky…' : `${liveCount.toLocaleString()} fire detections`}
                   </div>
                 </div>
@@ -120,11 +114,11 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         <TelemetryStrip />
         <FeaturePreviews onOpen={onOpen} />
 
-        <section className="grain relative">
-          <div className="relative z-[2] mx-auto max-w-[1440px] px-5 py-14 sm:px-8 lg:py-20">
+        <section className="flow-solves grain relative">
+          <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-28 pt-14 sm:px-8 lg:pb-36 lg:pt-20">
             <div className="mb-8">
               <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-700">What Artemis solves</div>
-              <h2 className="mt-2 font-display text-4xl leading-[1.05] text-neutral-950 sm:text-5xl">A connected picture for wildfire response</h2>
+              <h2 className="mt-3 max-w-4xl font-display text-2xl font-bold leading-[1.15] text-neutral-950 sm:text-4xl">A connected picture for wildfire response</h2>
             </div>
             <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
               <div className="grid gap-px overflow-hidden rounded-[6px] border border-neutral-900/15 bg-neutral-900/15 sm:grid-cols-2">
@@ -148,7 +142,7 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
                 <div className="fluted-glass relative z-[2] flex h-full flex-col justify-between p-6 sm:p-8">
                   <div className="rounded-[4px] bg-karhutla-paper/85 p-5 backdrop-blur-sm sm:p-6">
                     <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-700">Why it matters</div>
-                    <h3 key={selected.title} className="tab-panel-in mt-3 font-display text-3xl leading-tight text-neutral-950">{selected.title}</h3>
+                    <h3 key={selected.title} className="tab-panel-in mt-3 font-display text-lg font-bold leading-snug text-neutral-950 sm:text-xl">{selected.title}</h3>
                     <p key={`${selected.title}-d`} className="tab-panel-in mt-3 max-w-xl text-sm leading-7 text-neutral-800">{selected.description}</p>
                   </div>
                   <div className="mt-6 grid gap-2 sm:grid-cols-3">
@@ -166,11 +160,11 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         </section>
 
         {news && (
-          <section aria-labelledby="field-reporting" className="bg-karhutla-ink text-white">
-            <div className="mx-auto max-w-[1440px] px-5 py-14 sm:px-8">
-              <div className="mb-6">
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">Field reporting</div>
-                <h2 id="field-reporting" className="mt-2 font-display text-4xl text-white">Wildfire news</h2>
+          <section aria-labelledby="field-reporting" className="flow-news grain relative text-white">
+            <div className="relative z-[2] mx-auto max-w-[1440px] px-5 pb-20 pt-6 sm:px-8 lg:pb-28">
+              <div className="mb-8">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-karhutla-smoke/80">Field reporting</div>
+                <h2 id="field-reporting" className="mt-3 font-display text-2xl font-bold text-karhutla-smoke sm:text-4xl">Wildfire news</h2>
               </div>
               {news}
             </div>
@@ -178,12 +172,14 @@ export function ArtemisLanding({ onEnterConsole, onOpenAbout, onOpen, news }: Ar
         )}
       </main>
 
-      <footer className="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <img src={artemisWordmark} alt="Artemis" width={1200} height={326} className="h-6 w-auto opacity-80" />
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-700">NASA Space Apps 2026 · ITS Surabaya</p>
-        <button onClick={onEnterConsole} className="inline-flex items-center gap-2 self-start font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-900 underline-offset-4 hover:underline sm:self-auto">
+      <footer className="grain relative bg-karhutla-smoke">
+        <div className="relative z-[2] mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <img src={artemisWordmarkLight} alt="Artemis" width={1200} height={326} className="h-6 w-auto self-start object-contain opacity-85 sm:self-auto" />
+        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/60">NASA Space Apps 2026 · ITS Surabaya</p>
+        <button onClick={onEnterConsole} className="inline-flex items-center gap-2 self-start font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-300 underline-offset-4 hover:underline sm:self-auto">
           Open live console <ArrowRight className="h-3.5 w-3.5" />
         </button>
+        </div>
       </footer>
 
       {tuning && <TuningPanel earth={earth} onEarth={setEarth} />}

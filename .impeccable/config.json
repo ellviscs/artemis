@@ -8,6 +8,33 @@
         "value": "inter",
         "createdAt": "2026-11-14T07:24:03.768Z",
         "reason": "user confirmed: keep Inter for body text for now (DESIGN.md typography, open for a later typeset pass)"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "public/font-preview.html"
+        ],
+        "createdAt": "2026-11-14T09:51:39.130Z",
+        "reason": "User asked for neon/animated title effects; temporary font comparison page, deleted after the pick"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "public/font-preview.html"
+        ],
+        "createdAt": "2026-11-14T09:51:39.327Z",
+        "reason": "User asked for neon/animated title effects; temporary font comparison page, deleted after the pick"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/index.css"
+        ],
+        "createdAt": "2026-11-14T09:54:17.786Z",
+        "reason": "user confirmed: picked option B (Syncopate with animated gradient sweep) on 2026-11-14"
       }
     ]
   }

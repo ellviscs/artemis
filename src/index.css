@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import './leaflet-theme.css';
 
 @tailwind base;
@@ -154,6 +154,7 @@ input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible
   --karhutla-rust: #9e4324;
   --karhutla-char: #612c25;
   --paper: #ecebe8;
+  --smoke: #1a1210;
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
@@ -161,13 +162,54 @@ input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible
   background: linear-gradient(180deg, var(--karhutla-asap) 0%, var(--karhutla-bara) 22%, var(--karhutla-ember) 48%, var(--karhutla-rust) 72%, var(--karhutla-char) 100%);
 }
 
-/* Soft blobs of heat, for backgrounds behind glass. */
+/* Display headlines: Syncopate is set in capitals only. */
+.font-display { text-transform: uppercase; letter-spacing: 0.005em; }
+
+/* Animated ember sweep across a display headline (user-chosen treatment B). */
+.display-sweep {
+  background: linear-gradient(100deg, var(--karhutla-char) 0%, var(--karhutla-rust) 25%, var(--karhutla-asap) 50%, var(--karhutla-rust) 75%, var(--karhutla-char) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: displaySweep 6s linear infinite;
+}
+@keyframes displaySweep { to { background-position: -220% 0; } }
+
+/* ─── Landing colour flow ─────────────────────────────────────────────────
+   Each section starts on the colour the previous one ends on, so the page reads
+   as one heat gradient: paper → ember → smoke (ticker) → ember → paper → orange
+   (news) → smoke (footer). Section edges carry no borders. */
+.flow-hero {
+  background:
+    radial-gradient(48% 55% at 94% 6%, rgba(230, 148, 48, 0.9), transparent 70%),
+    radial-gradient(38% 42% at 72% 58%, rgba(217, 131, 28, 0.35), transparent 70%),
+    radial-gradient(45% 38% at 0% 96%, rgba(198, 116, 56, 0.55), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper) 52%, #ecd2b0 72%, #cf8a52 86%, #6e321f 95%, var(--smoke) 100%);
+}
+
+/* Soft blobs of heat, for backgrounds behind glass. Starts on the ticker's smoke. */
 .thermal-field {
   background:
-    radial-gradient(60% 70% at 18% 30%, rgba(230, 148, 48, 0.85), transparent 70%),
-    radial-gradient(45% 60% at 78% 20%, rgba(198, 116, 56, 0.75), transparent 70%),
-    radial-gradient(55% 65% at 62% 85%, rgba(158, 67, 36, 0.8), transparent 72%),
-    linear-gradient(180deg, #e9d6bf, #d9b48a);
+    radial-gradient(60% 55% at 18% 34%, rgba(230, 148, 48, 0.85), transparent 70%),
+    radial-gradient(45% 50% at 80% 26%, rgba(198, 116, 56, 0.75), transparent 70%),
+    radial-gradient(55% 50% at 62% 82%, rgba(158, 67, 36, 0.7), transparent 72%),
+    linear-gradient(180deg, var(--smoke) 0%, #6e321f 6%, #c67438 14%, #e2a468 24%, #ead3b4 42%, #e5c49c 70%, #ebdcc8 90%, var(--paper) 100%);
+}
+
+.flow-solves {
+  background:
+    radial-gradient(40% 35% at 100% 100%, rgba(230, 148, 48, 0.6), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper) 48%, #ead0ad 70%, #e0a465 87%, #d98a3c 100%);
+}
+
+/* News: the same orange heat field as the charts section, burning down to smoke. */
+.flow-news {
+  background:
+    radial-gradient(50% 40% at 12% 18%, rgba(230, 148, 48, 0.95), transparent 70%),
+    radial-gradient(42% 46% at 88% 34%, rgba(198, 116, 56, 0.8), transparent 70%),
+    radial-gradient(60% 40% at 50% 88%, rgba(97, 44, 37, 0.85), transparent 75%),
+    linear-gradient(180deg, #d98a3c 0%, var(--karhutla-bara) 22%, var(--karhutla-ember) 46%, var(--karhutla-rust) 68%, var(--karhutla-char) 86%, var(--smoke) 100%);
 }
 
 .grain {
@@ -254,7 +296,7 @@ input:focus-visible, button:focus-visible, select:focus-visible, a:focus-visible
 @keyframes panelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track, .page-stage, .page-stage.is-exiting, .smoke-veil, .tab-panel-in { animation: none !important; }
+  .ticker-track, .page-stage, .page-stage.is-exiting, .smoke-veil, .tab-panel-in, .display-sweep { animation: none !important; }
   .smoke-veil { display: none; }
   .chart-draw path[data-draw], .grow-bars [data-bar], .slide-marks [data-mark], .slide-marks [data-fill] { transition: none !important; stroke-dashoffset: 0 !important; transform: none !important; opacity: 1 !important; }
 }

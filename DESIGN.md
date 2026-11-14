@@ -28,10 +28,11 @@ colors:
   sensor-viirs: "#06b6d4"
 typography:
   display:
-    fontFamily: "Instrument Serif, Georgia, serif"
-    fontSize: "4.5rem"
-    fontWeight: 400
-    lineHeight: 0.98
+    fontFamily: "Syncopate, Inter, system-ui, sans-serif"
+    fontSize: "3.3rem"
+    fontWeight: 700
+    lineHeight: 1.08
+    textTransform: uppercase
     letterSpacing: "-0.01em"
   headline:
     fontFamily: "JetBrains Mono, monospace"
@@ -123,12 +124,12 @@ ARTEMIS is a mission-control desk at 3 a.m. The room is dark and quiet so the ey
 
 Density is operational. Emergency managers scan region, anomaly and next action in seconds, so panels are compact, borders are hairlines, and decoration is limited to a faint 40px blueprint grid on the page background and a soft orange glow behind live indicators. Data visualisations are the brightest, most colorful things on screen, which is why their ramps must be colorblind-safe and must never compete with the brand orange.
 
-The operational app (dashboard, audit, Impact Hub) stays in this dark world. **The landing page is the one exception (user decision, Nov 2026): a light "KARHUTLA paper" page** (#ecebe8 with grain) that frames the dark 3D Earth as a window, uses thermal gradients, fluted glass and liquid-glass cards, and sets headlines in Instrument Serif.
+The operational app (dashboard, audit, Impact Hub) stays in this dark world. **The landing page is the one exception (user decision, Nov 2026): a light "KARHUTLA paper" page** (#ecebe8 with grain) that frames the dark 3D Earth as a window, uses thermal gradients, fluted glass and liquid-glass cards, and sets headlines in Syncopate, a wide extended face (user pick, Nov 2026, over Michroma, Unbounded and Krona One; Horizon needs a paid commercial licence). Sections blend into one heat gradient with no hard edges: paper → ember → smoke (ticker) → ember → paper → orange (news) → smoke (footer), using the `.flow-*` and `.thermal-field` utilities in `src/index.css`.
 
 **Key Characteristics:**
 - Neutral near-black surfaces (#0a0a0a → #111111) separated by 12%-white hairlines; neutrals are pure grays, never blue-tinted.
 - Brand oranges come from the KARHUTLA palette (#e69430, #d9831c, #c67438, #9e4324, #612c25) and are reserved for primary actions (Launch command center, Open impact hub, exports), live indicators and data.
-- Instrument Serif for display headlines (landing, section titles); JetBrains Mono for labels and numbers; Inter for prose.
+- Syncopate (uppercase, never italic) for display headlines (landing, section titles); JetBrains Mono for labels and numbers; Inter for prose.
 - Textures: thermal gradient (`.thermal-gradient`, `.thermal-field`), grain (`.grain`), fluted glass (`.fluted-glass`), liquid glass (`LiquidGlass`, landing only, over CSS backgrounds).
 - Tight, technical corners (2–6px); full rounding only for status dots.
 - Status is color-coded and always paired with a text label and icon.
@@ -166,14 +167,14 @@ A blackout palette with a single signal color; everything else is status, sensor
 
 ## Typography
 
-**Display Font:** Instrument Serif (with Georgia, serif): landing and section headlines only; echoes the italic Artemis wordmark. In the dark app, page titles may use it; panel titles stay mono.
+**Display Font:** Syncopate 700 (with Inter, sans-serif), always uppercase and never italic: landing and section headlines only. Its one animated treatment is `.display-sweep`, an ember gradient sweep on a single emphasis line (the hero's "Clarity is not."), static under reduced motion. Emphasis inside a headline uses colour (`text-karhutla-char`), not italics. Panel titles in the dark app stay mono.
 **Body Font:** Inter (with system-ui, sans-serif)
 **Label/Mono Font:** JetBrains Mono
 
 **Character:** Mono does the talking: headlines, labels and numbers read like instrument readouts. Inter carries only explanatory prose, where readability beats character. Inter is kept for now and is open for replacement in a later typeset pass; don't spread it into headings or labels.
 
 ### Hierarchy
-- **Display** (600, 2.25rem mobile → 3.75rem desktop, 1.08, −0.045em): landing hero headline only.
+- **Display** (Syncopate 700, 1.7rem mobile → 3.3rem desktop, 1.08–1.12, uppercase): landing hero headline. Section titles 1.5rem → 2.25rem; card titles 1rem → 1.125rem. Syncopate is very wide: keep display lines short.
 - **Headline** (600, 1.25rem → 1.875rem, 1.2, −0.035em): page titles such as the dashboard's "LIVE FIRE INTELLIGENCE // EARLY WARNING".
 - **Title** (Inter 600, 1.125rem, 1.4): panel and card titles in sentence case, warning titles.
 - **Body** (Inter 400, 0.875rem, 1.7): descriptions and caveats; max ~65ch (`max-w-xl`/`max-w-2xl`).
