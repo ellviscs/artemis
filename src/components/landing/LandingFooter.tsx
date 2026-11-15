@@ -59,7 +59,7 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
       <div className="mx-auto grid max-w-[1440px] gap-12 px-5 pb-10 pt-20 sm:px-8 lg:grid-cols-[1.25fr_0.75fr_0.75fr_0.85fr] lg:gap-10 lg:pt-28">
         <div className="max-w-md">
           <img src={artemisWordmarkLight} alt="Artemis" width={1200} height={326} className="h-9 w-auto object-contain" />
-          <p className="mt-6 font-display text-lg font-bold leading-snug">Fire intelligence for Indonesia</p>
+          <p className="mt-6 font-display text-lg font-bold leading-snug">Fire intelligence for Global</p>
           <p className="mt-3 text-[15px] leading-7 text-white/75">
             Twenty-six years of NASA MODIS and VIIRS fire detections on one scale: a burning calendar, hotspot
             forensics, an EUDR audit and an impact hub that turns every hotspot into an action.
@@ -73,7 +73,7 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
           </button>
           <p className="mt-8 text-[13px] text-white/60">© {year} Artemis · NASA Space Apps Challenge 2026</p>
           <p className="mt-2 text-[13px] text-white/75">
-            Built by <strong className="font-semibold text-white">Team ITS Surabaya</strong>
+            Built by <strong className="font-semibold text-white">Arek Artemis</strong>
           </p>
         </div>
 
@@ -98,19 +98,6 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
             ))}
           </ul>
         </nav>
-
-        <section aria-labelledby="footer-team">
-          <h2 id="footer-team" className="font-semibold text-white">Team</h2>
-          <ul className="mt-5 space-y-3.5">
-            <li className="text-[15px] text-white/80">Team ITS Surabaya</li>
-            <li className="text-[15px] text-white/80">Institut Teknologi Sepuluh Nopember</li>
-            {TEAM.map((m) => (
-              <li key={m.name} className="text-[15px] text-white/80">
-                {m.name} <span className="text-white/55">· {m.role}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
       </div>
 
       {/* The giant line, set into the bottom edge and fading into the forest like the reference. */}
