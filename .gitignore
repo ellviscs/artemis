@@ -33,4 +33,5 @@ __pycache__/
 
 # Local tool state (never part of the published repo)
 .claude/
+CLAUDE.md
 .vercel

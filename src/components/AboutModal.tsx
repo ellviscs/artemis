@@ -17,6 +17,15 @@ interface AboutModalProps {
   onClose: () => void;
 }
 
+const contributors = [
+  { name: 'Fadhil Mauludi', handle: '@fadhilm', role: 'Team owner' },
+  { name: 'Ellvis Cornelius Setiawan', handle: '@ellviscs', role: 'Contributor' },
+  { name: 'Desanda Verdely Yulisar', handle: '@mrpupperfish', role: 'Contributor' },
+  { name: 'Evan Dakara Sukatrilaksana', handle: '@evandakara', role: 'Contributor' },
+  { name: 'Jonathan Itung', handle: '@jonathanitung', role: 'Contributor' },
+  { name: 'Muhammad Syamfiraas Akbar', handle: '@firz', role: 'Contributor' },
+];
+
 export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   const [show, setShow] = useState(false);
 
@@ -72,13 +81,16 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="relative overflow-hidden border-b border-white/[0.08] bg-[radial-gradient(circle_at_15%_10%,rgba(217,131,28,0.22),transparent_40%),linear-gradient(135deg,#161616,#0c0c0c)] p-6 sm:p-8">
+        <div className="relative overflow-hidden border-b border-white/[0.08] bg-[radial-gradient(circle_at_8%_0%,rgba(230,148,48,0.18),transparent_38%),linear-gradient(135deg,#151515,#0b0b0b)] p-6 sm:p-8">
           <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full border border-amber-300/10" />
           <div className="absolute -right-8 -top-12 h-32 w-32 rounded-full border border-amber-300/10" />
-          <div className="relative flex items-start gap-4 pr-8">
-            <img src={artemisLogo} alt="Artemis" width={1200} height={326} className="mt-1 h-9 w-auto shrink-0 sm:h-11" />
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/[0.07] px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-emerald-200/80">
+          <div className="relative pr-8">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <img src={artemisLogo} alt="Artemis" width={1200} height={326} className="h-8 w-auto shrink-0 sm:h-9" />
+              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-amber-200/55">SYS / ABOUT</span>
+            </div>
+            <div className="border-l-2 border-amber-400/70 pl-4">
+              <div className="mb-2 inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200/75">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.8)]" />
                 Live fire intelligence
               </div>
@@ -161,19 +173,22 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
               <span className="font-mono text-[9px] uppercase tracking-wider text-white/55">Indonesia</span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {[
-                ['Fadhil Mauludi', '@fadhilm', 'Team owner'],
-                ['Ellvis Cornelius Setiawan', '@ellviscs', 'Contributor'],
-                ['Desanda Verdely Yulisar', '@mrpupperfish', 'Contributor'],
-                ['Evan Dakara Sukatrilaksana', '@evandakara', 'Contributor'],
-                ['Jonathan Itung', '@jonathanitung', 'Contributor'],
-                ['Muhammad Syamfiraas Akbar', '@firz', 'Contributor'],
-              ].map(([name, handle, role]) => (
-                <div key={handle} className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2.5">
-                  <div className="text-xs font-medium text-white/75">{name}</div>
-                  <div className="mt-0.5 flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10px] text-white/55">{handle}</span>
-                    <span className="text-[9px] uppercase tracking-wider text-amber-200/55">{role}</span>
+              {contributors.map(({ name, handle, role }) => (
+                <div key={handle} className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-2.5 transition-colors hover:border-amber-300/25 hover:bg-amber-300/[0.04]">
+                  <div className="h-11 w-11 shrink-0 rounded-lg border border-amber-300/30 bg-[#17130e] p-0.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+                    <img
+                      src={`https://github.com/${handle.slice(1)}.png?size=96`}
+                      alt={`${name} avatar`}
+                      loading="lazy"
+                      className="h-full w-full rounded-[5px] object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-medium text-white/75">{name}</div>
+                    <div className="mt-0.5 flex items-center justify-between gap-2">
+                      <span className="font-mono text-[10px] text-white/55">{handle}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-amber-200/55">{role}</span>
+                    </div>
                   </div>
                 </div>
               ))}
