@@ -6,19 +6,13 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import artemisWordmarkLight from '@/logo/artemis-wordmark-light.png';
 import { EmberField } from '@/components/landing/EmberField';
 
-/**
- * Team members, shown under "Team". Fill in names and roles when the team sends them;
- * while empty, only the team name is shown (no placeholder text on the public page).
- */
-const TEAM: { name: string; role: string }[] = [];
-
 interface Props {
   onEnterConsole: () => void;
   onOpenAbout: () => void;
   onOpen: (path: string) => void;
 }
 
-const linkCls = 'text-[15px] text-white/80 transition-colors hover:text-white';
+const linkCls = 'text-sm text-white/80 transition-colors hover:text-white';
 
 export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
   const year = new Date().getFullYear();
@@ -45,7 +39,7 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute inset-x-0 bottom-0 h-[78%] w-full object-cover object-[50%_35%]"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
           style={{ filter: 'brightness(0.5) saturate(0.75) sepia(0.45) contrast(1.05)' }}
         />
         {/* Ember wash, then blend the top into the news section's smoke. */}
@@ -56,30 +50,30 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
       <EmberField density={0.6} sparks={false} className="-z-[5]" />
       <div aria-hidden className="footer-smoke -z-[4]" />
 
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 pb-10 pt-20 sm:px-8 lg:grid-cols-[1.25fr_0.75fr_0.75fr_0.85fr] lg:gap-10 lg:pt-28">
+      <div className="mx-auto grid max-w-[1440px] items-start gap-8 px-5 pb-8 pt-14 sm:px-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(150px,0.65fr)_minmax(220px,0.9fr)] lg:gap-16 lg:pt-20">
         <div className="max-w-md">
           <img src={artemisWordmarkLight} alt="Artemis" width={1200} height={326} className="h-9 w-auto object-contain" />
-          <p className="mt-6 font-display text-lg font-bold leading-snug">Fire intelligence for Global</p>
-          <p className="mt-3 text-[15px] leading-7 text-white/75">
+          <p className="mt-4 font-display text-lg font-bold leading-snug">Fire intelligence for Global</p>
+          <p className="mt-2 text-sm leading-6 text-white/75">
             Twenty-six years of NASA MODIS and VIIRS fire detections on one scale: a burning calendar, hotspot
             forensics, an EUDR audit and an impact hub that turns every hotspot into an action.
           </p>
           <button
             type="button"
             onClick={onEnterConsole}
-            className="mt-7 inline-flex items-center gap-2 rounded-[6px] bg-accent-500 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] text-karhutla-smoke transition-colors hover:bg-accent-400"
+            className="mt-6 inline-flex items-center gap-2 rounded-[6px] bg-accent-500 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] text-karhutla-smoke transition-colors hover:bg-accent-400"
           >
             Launch command center <ArrowRight className="h-4 w-4" />
           </button>
-          <p className="mt-8 text-[13px] text-white/60">© {year} Artemis · NASA Space Apps Challenge 2026</p>
-          <p className="mt-2 text-[13px] text-white/75">
+          <p className="mt-6 text-xs text-white/60">© {year} Artemis · NASA Space Apps Challenge 2026</p>
+          <p className="mt-1 text-xs text-white/75">
             Built by <strong className="font-semibold text-white">Arek Artemis</strong>
           </p>
         </div>
 
         <nav aria-label="Explore">
           <h2 className="font-semibold text-white">Explore</h2>
-          <ul className="mt-5 space-y-3.5">
+          <ul className="mt-4 space-y-2.5">
             {explore.map(([label, go]) => (
               <li key={label}><button type="button" onClick={go} className={linkCls}>{label}</button></li>
             ))}
@@ -88,7 +82,7 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
 
         <nav aria-label="Data sources">
           <h2 className="font-semibold text-white">Data</h2>
-          <ul className="mt-5 space-y-3.5">
+          <ul className="mt-4 space-y-2.5">
             {data.map(([label, href]) => (
               <li key={label}>
                 <a href={href} target="_blank" rel="noopener noreferrer" className={`${linkCls} inline-flex items-center gap-1`}>
@@ -101,7 +95,7 @@ export function LandingFooter({ onEnterConsole, onOpenAbout, onOpen }: Props) {
       </div>
 
       {/* The giant line, set into the bottom edge and fading into the forest like the reference. */}
-      <div aria-hidden className="footer-mega pointer-events-none mx-auto max-w-[1600px] select-none px-3 sm:px-6">
+      <div aria-hidden className="footer-mega pointer-events-none mx-auto mt-4 max-w-[1600px] select-none px-3 sm:px-6">
         <div className="pl-[0.4vw] font-display text-[min(4.2vw,70px)] font-bold leading-none tracking-[0.02em] text-[#efe7dc]/85">All eyes on</div>
         <div className="-mb-[min(2.4vw,40px)] font-display text-[min(12.6vw,210px)] font-bold leading-[0.92] text-[#efe7dc]/90">Karhutla</div>
       </div>
