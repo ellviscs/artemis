@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, ExternalLink, Database } from 'lucide-react';
-import artemisWordmark from '@/logo/artemis-wordmark-light.png';
+import artemisWordmark from '@/logo & team/artemis-wordmark-light.png';
 
 import {
   createLiveDailySummary,

@@ -6,7 +6,7 @@ import { DEFAULT_EARTH, type EarthTuning } from '@/components/landing/earthTunin
 import { EmberField } from '@/components/landing/EmberField';
 import { LandingAtmosphere } from '@/components/landing/LandingAtmosphere';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import artemisWordmarkLight from '@/logo/artemis-wordmark-light.png';
+import artemisWordmarkLight from '@/logo & team/artemis-wordmark-light.png';
 import { cn } from '@/lib/utils';
 import { useInView } from '@/lib/useInView';
 import { fetchHistoryMeta, type HistoryMeta } from '@/data/historyApi';

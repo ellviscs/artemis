@@ -3,7 +3,7 @@
 // and embers, and a giant "ALL EYES ON KARHUTLA" set into the bottom edge.
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
-import artemisWordmarkLight from '@/logo/artemis-wordmark-light.png';
+import artemisWordmarkLight from '@/logo & team/artemis-wordmark-light.png';
 import { EmberField } from '@/components/landing/EmberField';
 
 interface Props {
